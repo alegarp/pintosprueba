@@ -24,8 +24,6 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
-static struct list waitQueue;
-
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
@@ -94,7 +92,6 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
-  list_init (&waitQueue);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -165,55 +162,6 @@ thread_print_stats (void)
    The code provided sets the new thread's `priority' member to
    PRIORITY, but no actual priority scheduling is implemented.
    Priority scheduling is the goal of Problem 1-3. */
-
-void insertar_en_lista_espera(int64_t ticks){
-
-	//Deshabilitamos interrupciones
-	enum intr_level old_level;
-	old_level = intr_disable ();
-
-	/* Remover el thread actual de "ready_list" e insertarlo en "lista_espera"
-	Cambiar su estatus a THREAD_BLOCKED, y definir su tiempo de expiracion */
-	
-	struct thread *thread_actual = thread_current ();
-  thread_actual->tim_sleep = timer_ticks() + ticks;
-  
-  /*Donde TIEMPO_DORMIDO es el atributo de la estructura thread que usted
-	  definió como paso inicial*/
-	
-  list_push_back(&waitQueue, &thread_actual->elem);
-  thread_block();
-
-  //Habilitar interrupciones
-	intr_set_level (old_level);
-}
-
-void remover_thread_durmiente(int64_t ticks){
-
-	/*Cuando ocurra un timer_interrupt, si el tiempo del thread ha expirado
-	Se mueve de regreso a ready_list, con la funcion thread_unblock*/
-	
-	//Iterar sobre "lista_espera"
-	struct list_elem *iter = list_begin(&waitQueue);
-	while(iter != list_end(&waitQueue) ){
-		struct thread *thread_lista_espera= list_entry(iter, struct thread, elem);
-		
-		/*Si el tiempo global es mayor al tiempo que el thread permanecía dormido
-		  entonces su tiempo de dormir ha expirado*/
-		
-		if(ticks >= thread_lista_espera->tim_sleep){
-			//Lo removemos de "lista_espera" y lo regresamos a ready_list
-			iter = list_remove(iter);
-			thread_unblock(thread_lista_espera);
-		}else{
-			//Sino, seguir iterando
-			iter = list_next(iter);
-		}
-	}
-  
-}
-
-
 tid_t
 thread_create (const char *name, int priority,
                thread_func *function, void *aux) 
@@ -272,10 +220,6 @@ thread_block (void)
   schedule ();
 }
 
-
-
-
-
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
@@ -284,12 +228,6 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
-
-
-
-
-
-
 void
 thread_unblock (struct thread *t) 
 {
@@ -393,57 +331,19 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
-
-
-
-
-
-
-
-/*ROUND ROBIN RR SCHEDULLING, 
-PRI_MIN (0) a PRI_MAX (63), 
-prioridad inicial es pasada como argumento, sino hay una funcion especifica entonces
-se utiliza PRI_DEFAULT(31)
-
-fila de threads -> ready_list
-Sets the current thread's priority to NEW_PRIORITY. 
-
-diferentes ramas para que c/rama se especialice entre si
-*/
+/* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
 {
-      thread_current ()->priority = new_priority;
- 
-    thread_yield();  
- 
-
-
-  
-
+  thread_current ()->priority = new_priority;
 }
-
-
-
-
-
 
 /* Returns the current thread's priority. */
 int
 thread_get_priority (void) 
 {
   return thread_current ()->priority;
- //if()
-  list_push_back (&ready_list, &t->elem);
-
 }
-
-
-
-
-
-
-
 
 /* Sets the current thread's nice value to NICE. */
 void
