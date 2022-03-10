@@ -386,41 +386,69 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
-/* Sets the current thread's priority to NEW_PRIORITY. */
+
 /*
 Establece la prioridad del subproceso actual en :
           *si el subproceso actual ya no tiene la prioridad más 
-          alta, los rendimientos.
-          new_priority.
+          alta, yields,new_priority.
 Nota: las prioridades van de 0 a 63
           *0 más baja
           *63 más alta
   1. filtro de prevención
     1.1 verificar que new_priority >= 0 y  <= 63
   2. obtener el thread con la prioridad más alta
-  
-
+  3.verificar si el thread que esta corriendo 
+    tiene mayor prioridad que el thread con la
+    maxima prioridad de la ready list.
 */
 
-bool funcion_comparativa( const struct list_elem *a, const struct list_elem *b){
+bool 
+funcion_comparativa( const struct list_elem *a, const struct list_elem *b){
     const struct thread *threada = list_entry(a, struct thread, elem);
     const struct thread *threadb = list_entry(b, struct thread, elem);
 
     return (threada->priority) < (threadb->priority);
 }
+/* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
 {
-  ASSERT (new_priority >= 0);
-  ASSERT (new_priority <=64);
+  ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
 
 
   //obtnenemos el thread con la maxima prioridad de la ready list
 
-  struct list_elem *element = list_max(&ready_list,funcion_comparativa, NULL);
-  const struct thread *max = list_entry(element, struct thread, elem);
+  struct list_elem *element = list_max(&ready_list,&funcion_comparativa, NULL);
+  int max = list_entry(element, struct thread, elem)->priority;
   //thread_current ()->priority = new_priority;
   //ahora que??
+ // struct thread *actual = thread_current();
+  // cambiar la prioridad del current_thrad
+
+ 
+  //hubo inversion de prioridades
+  if(thread_current()->priority != actual->originalT){
+    /*
+    ¿que pasa si al thread que le donaron le bajan la prioridad?
+
+    */
+    if(thread_current()->priority > new_priority)
+      //se reduce la prioridad de la prioridad original
+      thread_current()->originalT = new_priority;
+    else
+      //aumenta la prioridad
+      thread_current()->priority = thread_current()->originalT = new_priority;
+    //break;
+    return;
+
+  }
+
+  thread_current()->priority = thread_current()->originalT = new_priority;
+  //aplicar o no aplicar yield, esa es la cuestion.
+  if(new_priority <= max){
+    thread_yield();
+
+  }
 
 }
 
@@ -552,6 +580,7 @@ init_thread (struct thread *t, const char *name, int priority)
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
+  t->originalT = priority;
   t->magic = THREAD_MAGIC;
 
   old_level = intr_disable ();

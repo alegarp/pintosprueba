@@ -103,6 +103,7 @@ struct thread
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
     int nice;                          /*EL valor Nice*/
+    int originalT;                     /* int que guarda el valor de la prioridad*/
   };
 
 /* If false (default), use round-robin scheduler.
