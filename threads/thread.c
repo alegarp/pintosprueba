@@ -387,11 +387,43 @@ thread_foreach (thread_action_func *func, void *aux)
 }
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
+/*
+Establece la prioridad del subproceso actual en :
+          *si el subproceso actual ya no tiene la prioridad más 
+          alta, los rendimientos.
+          new_priority.
+Nota: las prioridades van de 0 a 63
+          *0 más baja
+          *63 más alta
+  1. filtro de prevención
+    1.1 verificar que new_priority >= 0 y  <= 63
+  2. obtener el thread con la prioridad más alta
+  
+
+*/
+
+bool funcion_comparativa( const struct list_elem *a, const struct list_elem *b){
+    const struct thread *threada = list_entry(a, struct thread, elem);
+    const struct thread *threadb = list_entry(b, struct thread, elem);
+
+    return (threada->priority) < (threadb->priority);
+}
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
+  ASSERT (new_priority >= 0);
+  ASSERT (new_priority <=64);
+
+
+  //obtnenemos el thread con la maxima prioridad de la ready list
+
+  struct list_elem *element = list_max(&ready_list,funcion_comparativa, NULL);
+  const struct thread *max = list_entry(element, struct thread, elem);
+  //thread_current ()->priority = new_priority;
+  //ahora que??
+
 }
+
 
 /* Returns the current thread's priority. */
 int
