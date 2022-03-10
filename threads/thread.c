@@ -413,8 +413,9 @@ funcion_comparativa( const struct list_elem *a, const struct list_elem *b){
 void
 thread_set_priority (int new_priority) 
 {
-  ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
 
+//  ASSERT (thread_current() != NULL);
+  ASSERT (PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
   //obtnenemos el thread con la maxima prioridad de la ready list
 
@@ -427,7 +428,7 @@ thread_set_priority (int new_priority)
 
  
   //hubo inversion de prioridades
-  if(thread_current()->priority != actual->originalT){
+  if(thread_current()->priority != thread_current()->originalT){
     /*
     ¿que pasa si al thread que le donaron le bajan la prioridad?
 
