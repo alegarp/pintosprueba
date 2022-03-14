@@ -403,7 +403,7 @@ Nota: las prioridades van de 0 a 63
 */
 
 bool 
-funcion_comparativa( const struct list_elem *a, const struct list_elem *b){
+funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux){
     const struct thread *threada = list_entry(a, struct thread, elem);
     const struct thread *threadb = list_entry(b, struct thread, elem);
 
@@ -446,7 +446,7 @@ thread_set_priority (int new_priority)
 
   thread_current()->priority = thread_current()->originalT = new_priority;
   //aplicar o no aplicar yield, esa es la cuestion.
-  if(new_priority <= max){
+  if(new_priority <= max || new_priority == 0){
     thread_yield();
 
   }
@@ -466,6 +466,15 @@ void
 thread_set_nice (int nice UNUSED) 
 {
   /* Not yet implemented. */
+    ASSERT(nice<= 20 && nice >= -20);
+    ASSERT(is_thread(thread_current()));
+    if( thread_current() != idle_thread){
+    //  int FP =  (thread_current () ->)
+    //  int recent_cpu = (2*)
+   //   thread_current = PRI_MAX - (nice*2)-
+    }
+
+
   thread_current ()->nice = nice;
 
 }
@@ -476,6 +485,7 @@ thread_get_nice (void)
 {
   /* Not yet implemented. */
   //return 0;
+
   return thread_current ()->nice;
 }
 

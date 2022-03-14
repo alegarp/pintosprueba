@@ -95,6 +95,8 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+        int originalT;                     /* int que guarda el valor de la prioridad*/
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -103,7 +105,7 @@ struct thread
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
     int nice;                          /*EL valor Nice*/
-    int originalT;                     /* int que guarda el valor de la prioridad*/
+    int recent_cpu;                    /*Recent CPU*/
   };
 
 /* If false (default), use round-robin scheduler.
