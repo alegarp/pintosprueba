@@ -140,4 +140,11 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+
+
+
+
+
+void remover_thread_durmiente(int64_t ticks);
+void insertar_en_lista_espera(int64_t ticks);
 #endif /* threads/thread.h */
