@@ -89,7 +89,16 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-        int originalT;                     /* int que guarda el valor de la prioridad*/
+
+    int originalT;                     /* int que guarda el valor de la prioridad*/
+    int nice;                          /*EL valor Nice*/
+    int recent_cpu;                    /*Recent CPU*/
+    
+    struct lock *locks_fila; //locks esperen
+    int primera_prioridad;
+    int donacion;
+    bool donado;  //ha donado?
+
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -98,10 +107,11 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-    int nice;                          /*EL valor Nice*/
-    int recent_cpu;                    /*Recent CPU*/
+   //NO AGREGAR NADA ABAJO
   };
 
+
+//MAKE GRADE
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */

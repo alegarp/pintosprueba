@@ -156,6 +156,21 @@ sema_test_helper (void *sema_)
       sema_up (&sema[1]);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Initializes LOCK.  A lock can be held by at most a single
    thread at any given time.  Our locks are not "recursive", that
@@ -179,6 +194,9 @@ lock_init (struct lock *lock)
 
   lock->holder = NULL;
   sema_init (&lock->semaphore, 1);
+  //-------------------->REVISAR
+  //lock->prioridad = 31; cuando se crea un thread que prioridad tiene?
+
 }
 
 /* Acquires LOCK, sleeping until it becomes available if
@@ -192,13 +210,93 @@ lock_init (struct lock *lock)
 void
 lock_acquire (struct lock *lock)
 {
-  ASSERT (lock != NULL);
-  ASSERT (!intr_context ());
-  ASSERT (!lock_held_by_current_thread (lock));
+  
+  ASSERT (lock != NULL);  //Si el lock no es nulo
+  ASSERT (!intr_context ());  //Returns true if we are running in an interrupt context, otherwise false.
+  ASSERT (!lock_held_by_current_thread (lock));  //el lock no lo tenga el current thread
 
-  sema_down (&lock->semaphore);
-  lock->holder = thread_current ();
+  //Deshabilitamos interrupciones
+  enum intr_level old_level;  
+  old_level = intr_disable ();
+
+  struct thread *thread_actual = thread_current ();
+  struct thread *tholder = lock->holder; // poseedor del lock
+  
+  //struct lock *lock_a = lock; 
+  
+
+  thread_actual->locks_fila=lock; //haciendo fila :D
+
+
+  if(tholder !=NULL) //alguien tiene el lock
+  {
+    
+    struct lock *aux_lock=lock;
+    while(aux_lock != NULL)
+    {
+
+      if(aux_lock->prioridad < thread_actual->priority)
+      {
+          aux_lock->prioridad = thread_actual->priority;
+          aux_lock->holder->priority = aux_lock->prioridad;
+          aux_lock->holder->donado = true;
+          aux_lock  = aux_lock->holder->locks_fila;
+      }
+    }
+
+
+  }
+  else //tengo el lock
+  {
+    //prioridad del lock = prioridad del thread
+    lock -> prioridad = thread_actual ->priority;
+
+  }
+
+
+  /*if(!thread_mlfqs)
+  {
+    tholder->locks_fila = NULL;
+  }*/
+
+
+
+
+
+  sema_down (&lock->semaphore);     //P resta 1, lock valor de semaforo
+  lock->prioridad=thread_actual->priority;
+  lock->holder = thread_actual; // lock en holder sera el thread_actual
+
+
+
+
+  //Habilitar interrupciones
+  intr_set_level (old_level);
+
 }
+
+
+
+
+/* Releases LOCK, which must be owned by the current thread.
+
+   An interrupt handler cannot acquire a lock, so it does not
+   make sense to try to release a lock within an interrupt
+   handler. */
+void
+lock_release (struct lock *lock) 
+{
+  ASSERT (lock != NULL);      //Si el lock no es nulo
+  ASSERT (lock_held_by_current_thread (lock)); //el lock no lo tenga el current thread
+
+
+  lock->holder = NULL; //el lock en struct thread *holder tendra NULL
+  sema_up (&lock->semaphore); //V suma 1, lock valor de semaforo
+}
+
+
+
+
 
 /* Tries to acquires LOCK and returns true if successful or false
    on failure.  The lock must not already be held by the current
@@ -220,20 +318,6 @@ lock_try_acquire (struct lock *lock)
   return success;
 }
 
-/* Releases LOCK, which must be owned by the current thread.
-
-   An interrupt handler cannot acquire a lock, so it does not
-   make sense to try to release a lock within an interrupt
-   handler. */
-void
-lock_release (struct lock *lock) 
-{
-  ASSERT (lock != NULL);
-  ASSERT (lock_held_by_current_thread (lock));
-
-  lock->holder = NULL;
-  sema_up (&lock->semaphore);
-}
 
 /* Returns true if the current thread holds LOCK, false
    otherwise.  (Note that testing whether some other thread holds
@@ -245,6 +329,25 @@ lock_held_by_current_thread (const struct lock *lock)
 
   return lock->holder == thread_current ();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* One semaphore in a list. */
 struct semaphore_elem 

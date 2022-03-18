@@ -18,11 +18,19 @@ bool sema_try_down (struct semaphore *);
 void sema_up (struct semaphore *);
 void sema_self_test (void);
 
+
+
+
+
 /* Lock. */
 struct lock 
   {
     struct thread *holder;      /* Thread holding lock (for debugging). */
     struct semaphore semaphore; /* Binary semaphore controlling access. */
+  
+    struct list_elem lock_elem; //lista  prioritaria 
+    int prioridad; //numero de prioridad
+    //struct donacion *donado; //donacion que tiene el thread del lock
   };
 
 void lock_init (struct lock *);
@@ -30,6 +38,23 @@ void lock_acquire (struct lock *);
 bool lock_try_acquire (struct lock *);
 void lock_release (struct lock *);
 bool lock_held_by_current_thread (const struct lock *);
+
+/*
+https://web.stanford.edu/class/cs140/projects/pintos/pintos_2.html#SEC15
+https://web.stanford.edu/class/cs140/projects/pintos/pintos_6.html#SEC100
+DONACION DE PRIORIDADES PARA LOCK
+*/
+struct donacion
+{
+  int prioridad; //prioridad
+  struct lock *lock; //donacion lock
+  struct list_elem elem; //lista de donacion lock
+
+};
+
+
+
+
 
 /* Condition variable. */
 struct condition 

@@ -24,7 +24,7 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
-static struct list waitQueue;
+static struct list waitQueue; //lista threads en espera del tiempo
 
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
@@ -91,6 +91,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+
   list_init (&waitQueue);
 
   /* Set up a thread structure for the running thread. */
@@ -183,6 +184,9 @@ void insertar_en_lista_espera(int64_t ticks){
   //Habilitar interrupciones
   intr_set_level (old_level);
 }
+
+
+
 
 void remover_thread_durmiente(int64_t ticks){
 
@@ -455,7 +459,7 @@ thread_get_priority (void)
 
 /* Sets the current thread's nice value to NICE. */
 void
-thread_set_nice (int nice UNUSED) 
+thread_set_nice (int nice ) 
 {
   /* Not yet implemented. */
     ASSERT(nice<= 20 && nice >= -20);
