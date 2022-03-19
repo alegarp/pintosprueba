@@ -233,7 +233,6 @@ lock_acquire (struct lock *lock)
     //PRIORIDAD MAS BAJA(0) a PRI_MAX (63),
     // que es mas importante el 63 o el 0?
 
-    //waiters(thread_actual, tholder);
     struct list_elem *element = list_min(&ready_list,&waiters, NULL);
     int minimo = list_entry(element, struct thread, elem)->priority;//prioridad mas pequeña
     
