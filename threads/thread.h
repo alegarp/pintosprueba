@@ -90,14 +90,13 @@ struct thread
     struct list_elem elem;              /* List element. */
 
 
-    int originalT;                     /* int que guarda el valor de la prioridad*/
+    int originalT;                     /* int que guarda el valor de la prioridad, prioridad*/
     int nice;                          /*EL valor Nice*/
     int recent_cpu;                    /*Recent CPU*/
     
-    struct lock *locks_fila; //locks esperen
-    int primera_prioridad;
-    int donacion;
-    bool donado;  //ha donado?
+    //struct lock *locks_fila; //locks esperen
+    //int donacion;
+    //bool donado;  //¿ha donado?
 
 
 #ifdef USERPROG

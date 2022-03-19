@@ -412,6 +412,7 @@ thread_set_priority (int new_priority)
 {
 
 //  ASSERT (thread_current() != NULL);
+          //31          
   ASSERT (PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
   //obtnenemos el thread con la maxima prioridad de la ready list
@@ -448,6 +449,27 @@ thread_set_priority (int new_priority)
   }
 
 }
+
+
+
+
+
+//LO NECESITA EN synch
+bool waiters(struct list_elem *actual, struct list_elem *tholder)
+{
+  const struct thread *threada = list_entry(actual, struct thread, elem);
+  const struct thread *threadb = list_entry(tholder, struct thread, elem);
+
+  return (threada->priority) > (threadb->priority);
+}
+
+
+
+
+
+
+
+
 
 
 /* Returns the current thread's priority. */

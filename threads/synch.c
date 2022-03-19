@@ -221,16 +221,31 @@ lock_acquire (struct lock *lock)
 
   struct thread *thread_actual = thread_current ();
   struct thread *tholder = lock->holder; // poseedor del lock
-  
-  //struct lock *lock_a = lock; 
-  
 
-  thread_actual->locks_fila=lock; //haciendo fila :D
 
+  //thread_actual->locks_fila=lock; //haciendo fila :D PRIORIDAD MAS ALTA 
+  //funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux)
 
   if(tholder !=NULL) //alguien tiene el lock
   {
+    //casos prioridad
+    //THREAD ACTUAL tiene la prioridad mas baja? SI LA TENGO entonces busco en ready list la prioridad mas alta para donacion
+    //PRIORIDAD MAS BAJA(0) a PRI_MAX (63),
+    // que es mas importante el 63 o el 0?
+
+    //waiters(thread_actual, tholder);
+    struct list_elem *element = list_min(&ready_list,&waiters, NULL);
+    int minimo = list_entry(element, struct thread, elem)->priority;//prioridad mas pequeña
     
+    if(thread_actual->priority < minimo)//si actual tiene la prioridad mas pequeña
+    {//cambio prioridad del thread actual CASOS DONACION
+
+    }
+    else //alguien mas tiene prioridad menor, 
+    {
+
+    }  
+
     struct lock *aux_lock=lock;
     while(aux_lock != NULL)
     {
