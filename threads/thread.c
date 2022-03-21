@@ -446,6 +446,7 @@ thread_set_priority (int new_priority)
   if(new_priority <= max || new_priority == 0){
     thread_yield();
 
+
   }
 
 }
@@ -455,7 +456,7 @@ thread_set_priority (int new_priority)
 
 
 //LO NECESITA EN synch
-bool waiters(struct list_elem *actual, struct list_elem *tholder)
+bool waiters(struct list_elem *actual, struct list_elem *tholder, void *aux)
 {
   const struct thread *threada = list_entry(actual, struct thread, elem);
   const struct thread *threadb = list_entry(tholder, struct thread, elem);
@@ -465,7 +466,19 @@ bool waiters(struct list_elem *actual, struct list_elem *tholder)
 
 
 
-
+void paralocks(struct thread *thread_actual)
+{
+  struct list_elem *element = list_min(&ready_list,&waiters, NULL);
+  int minimo = list_entry(element, struct thread, elem)->priority;//prioridad mas pequeña
+    
+  if(thread_actual->priority < minimo)//si actual tiene la prioridad mas pequeña
+  {//cambio prioridad del thread actual CASOS DONACION
+    struct list_elem *element = list_max(&ready_list,&funcion_comparativa, NULL);
+    int maximo = list_entry(element, struct thread, elem)->priority;//prioridad mas grande
+    thread_actual->priority = maximo;
+      
+  }
+}
 
 
 

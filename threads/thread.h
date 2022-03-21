@@ -84,19 +84,18 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
-    int tim_sleep;
-
+    
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+    int64_t tim_sleep;
 
-    int originalT;                     /* int que guarda el valor de la prioridad, prioridad*/
+    int originalT;                     /* guarda el valor de la prioridad, prioridad*/
     int nice;                          /*EL valor Nice*/
     int recent_cpu;                    /*Recent CPU*/
     
-    //struct lock *locks_fila; //locks esperen
-    //int donacion;
-    //bool donado;  //¿ha donado?
+    struct list old_priority_list;
+    struct list locks_thread ;            //locks del thread
 
 
 #ifdef USERPROG
@@ -151,7 +150,7 @@ int thread_get_load_avg (void);
 void insertar_en_lista_espera(int64_t ticks);
 void remover_thread_durmiente(int64_t ticks);
 bool funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux);
-  
-
+bool waiters(struct list_elem *a, struct list_elem *b,void *aux);
+void paralocks(struct thread *thread_actual);
 
 #endif /* threads/thread.h */

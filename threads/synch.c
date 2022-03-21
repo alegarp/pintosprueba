@@ -233,55 +233,23 @@ lock_acquire (struct lock *lock)
     //PRIORIDAD MAS BAJA(0) a PRI_MAX (63),
     // que es mas importante el 63 o el 0?
 
-    struct list_elem *element = list_min(&ready_list,&waiters, NULL);
-    int minimo = list_entry(element, struct thread, elem)->priority;//prioridad mas pequeña
-    
-    if(thread_actual->priority < minimo)//si actual tiene la prioridad mas pequeña
-    {//cambio prioridad del thread actual CASOS DONACION
-
-    }
-    else //alguien mas tiene prioridad menor, 
+    /*else //alguien mas tiene prioridad menor o igual
     {
-
-    }  
-
-    struct lock *aux_lock=lock;
-    while(aux_lock != NULL)
-    {
-
-      if(aux_lock->prioridad < thread_actual->priority)
-      {
-          aux_lock->prioridad = thread_actual->priority;
-          aux_lock->holder->priority = aux_lock->prioridad;
-          aux_lock->holder->donado = true;
-          aux_lock  = aux_lock->holder->locks_fila;
-      }
-    }
-
+      thread_yield();
+    } */ 
 
   }
   else //tengo el lock
   {
-    //prioridad del lock = prioridad del thread
-    lock -> prioridad = thread_actual ->priority;
+    paralocks(thread_actual);
+    
 
   }
-
-
-  /*if(!thread_mlfqs)
-  {
-    tholder->locks_fila = NULL;
-  }*/
-
-
-
 
 
   sema_down (&lock->semaphore);     //P resta 1, lock valor de semaforo
   lock->prioridad=thread_actual->priority;
   lock->holder = thread_actual; // lock en holder sera el thread_actual
-
-
 
 
   //Habilitar interrupciones
@@ -303,9 +271,41 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);      //Si el lock no es nulo
   ASSERT (lock_held_by_current_thread (lock)); //el lock no lo tenga el current thread
 
+  //Deshabilitamos interrupciones+
+  enum intr_level old_level;  
+  old_level = intr_disable ();
+
+/*
+lock_acquire adquiero el lock   
+codigo
+lock_release suelto el lock 
+*/
+
+  struct thread *thread_actual = thread_current ();
+  struct thread *tholder = lock->holder; // poseedor del lock
+  
 
   lock->holder = NULL; //el lock en struct thread *holder tendra NULL
+
+  list_remove (&lock->lock_tienen);
+  
+    
+  if(thread_actual->priority != thread_actual->originalT)
+  {
+  //SI HA donado entonces debe recuperar su valor original
+    if(list_empty(&thread_actual -> participacion_locks) )
+    {
+      thread_actual->priority = thread_actual->originalT ;
+  
+    }
+  }
+  //si no ha donado se queda igual
+  
+
   sema_up (&lock->semaphore); //V suma 1, lock valor de semaforo
+
+    //Habilitar interrupciones
+  intr_set_level (old_level);
 }
 
 

@@ -28,7 +28,8 @@ struct lock
     struct thread *holder;      /* Thread holding lock (for debugging). */
     struct semaphore semaphore; /* Binary semaphore controlling access. */
   
-    struct list_elem lock_elem; //lista  prioritaria 
+    struct list_elem locks_adquirieron; //lista  elementos adquirieron el lock
+    struct list_elem lock_tienen; //lista  elementos que tienen el  lock
     int prioridad; //numero de prioridad
     //struct donacion *donado; //donacion que tiene el thread del lock
   };
