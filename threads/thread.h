@@ -95,7 +95,10 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-        int originalT;                     /* int que guarda el valor de la prioridad*/
+    int originalT;                     /* int que guarda el valor de la prioridad*/
+    bool dono;                         /* si el thread dono o recibio*/
+    int nice;                          /*EL valor Nice*/
+    int recent_cpu;                    /*Recent CPU*/
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -104,8 +107,7 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-    int nice;                          /*EL valor Nice*/
-    int recent_cpu;                    /*Recent CPU*/
+
   };
 
 /* If false (default), use round-robin scheduler.
@@ -143,5 +145,6 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+void update_priority(struct thread *t);
 
 #endif /* threads/thread.h */

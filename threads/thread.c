@@ -418,7 +418,7 @@ thread_set_priority (int new_priority)
   ASSERT (PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
   //obtnenemos el thread con la maxima prioridad de la ready list
-
+  struct thread *actual = thread_current();
   struct list_elem *element = list_max(&ready_list,&funcion_comparativa, NULL);
   int max = list_entry(element, struct thread, elem)->priority;
   //thread_current ()->priority = new_priority;
@@ -426,30 +426,7 @@ thread_set_priority (int new_priority)
  // struct thread *actual = thread_current();
   // cambiar la prioridad del current_thrad
 
- 
-  //hubo inversion de prioridades
-  if(thread_current()->priority != thread_current()->originalT){
-    /*
-    ¿que pasa si al thread que le donaron le bajan la prioridad?
-
-    */
-    if(thread_current()->priority > new_priority)
-      //se reduce la prioridad de la prioridad original
-      thread_current()->originalT = new_priority;
-    else
-      //aumenta la prioridad
-      thread_current()->priority = thread_current()->originalT = new_priority;
-    //break;
-    return;
-
-  }
-
-  thread_current()->priority = thread_current()->originalT = new_priority;
-  //aplicar o no aplicar yield, esa es la cuestion.
-  if(new_priority <= max || new_priority == 0){
-    thread_yield();
-
-  }
+  
 
 }
 
@@ -555,6 +532,18 @@ kernel_thread (thread_func *function, void *aux)
 }
 
 /* Returns the running thread. */
+
+void update_priority(struct thread *t){
+  t->priority = restaIntFromFP(
+    restaFP(
+      converToFP(PRI_MAX),
+      divintFP(
+        t->recent_cpu,4
+      )
+    ),
+    (t->nice*2)
+  );
+}
 struct thread *
 running_thread (void) 
 {
@@ -590,9 +579,17 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
+  if(thread_mlfqs == true){
+    update_priority(t);
+  }
+  else{
   t->priority = priority;
   t->originalT = priority;
+
+  }
+  t->dono = false;
   t->magic = THREAD_MAGIC;
+
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
