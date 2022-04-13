@@ -260,10 +260,10 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-  if(thread_mlfqs == false)
-    if(priority > thread_current()->priority){
+  // Yield condition
+  if(thread_mlfqs == false && priority > thread_current()->priority)
       thread_yield();
-    }
+    
   
   return tid;
 }
@@ -416,7 +416,7 @@ funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void
     const struct thread *threada = list_entry(a, struct thread, elem);
     const struct thread *threadb = list_entry(b, struct thread, elem);
 
-    return (threada->priority) < (threadb->priority);
+    return (threada->priority) > (threadb->priority);
 }
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
@@ -434,6 +434,21 @@ thread_set_priority (int new_priority)
   //ahora que??
  // struct thread *actual = thread_current();
   // cambiar la prioridad del current_thrad
+
+  if(actual->dono){
+    if(new_priority > actual->priority){
+      actual->priority = new_priority;
+      if(new_priority < max){
+        thread_yield();
+      }
+    }
+  } else{
+    actual->originalT = new_priority;
+    actual->priority = new_priority;
+    if(new_priority < max){
+      thread_yield();
+    }
+  }
 
   
 
@@ -454,12 +469,6 @@ thread_set_nice (int nice UNUSED)
   /* Not yet implemented. */
     ASSERT(nice<= 20 && nice >= -20);
     ASSERT(is_thread(thread_current()));
-    if( thread_current() != idle_thread){
-    //  int FP =  (thread_current () ->)
-    //  int recent_cpu = (2*)
-   //   thread_current = PRI_MAX - (nice*2)-
-    }
-
 
   thread_current ()->nice = nice;
 
@@ -580,14 +589,14 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
-  if(thread_mlfqs == true){
-    update_priority(t);
-  }
-  else{
+  //if(thread_mlfqs == true){
+   // update_priority(t);
+  //}
+ // else{
   t->priority = priority;
   t->originalT = priority;
 
-  }
+  //}
   t->dono = false;
   t->magic = THREAD_MAGIC;
 
@@ -620,8 +629,12 @@ next_thread_to_run (void)
 {
   if (list_empty (&ready_list))
     return idle_thread;
-  else
-    return list_entry (list_pop_front (&ready_list), struct thread, elem);
+  else{ 
+        list_sort(&ready_list, &funcion_comparativa, NULL);
+        return list_entry (list_pop_front (&ready_list), struct thread, elem);
+
+  }
+
 }
 
 /* Completes a thread switch by activating the new thread's page
