@@ -534,7 +534,7 @@ kernel_thread (thread_func *function, void *aux)
 /* Returns the running thread. */
 
 void update_priority(struct thread *t){
-  t->priority = restaIntFromFP(
+ /* t->priority = restaIntFromFP(
       restaFP(
       converToFP(PRI_MAX),
       divintFP(
@@ -542,7 +542,7 @@ void update_priority(struct thread *t){
       )
     ),
     (t->nice*2)
-  );
+  );*/
 }
 struct thread *
 running_thread (void) 
