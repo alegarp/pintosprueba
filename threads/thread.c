@@ -98,6 +98,8 @@ thread_init (void)
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
+  initial_thread->nice = 0;
+  initial_thread->recent_cpu = 0;
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
@@ -534,12 +536,7 @@ kernel_thread (thread_func *function, void *aux)
 /* Returns the running thread. */
 
 void update_priority(struct thread *t){
-  t->priority = restaIntFromFP(
-      restaFP(
-      converToFP(PRI_MAX),
-      divintFP(
-        t->recent_cpu,4)),
-    (t->nice*2));
+  t->priority = restaIntFromFP( restaFP( converToFP(PRI_MAX), divintFP( t->recent_cpu,4)), (t->nice * 2));   
 }
 struct thread *
 running_thread (void) 
