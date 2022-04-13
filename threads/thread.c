@@ -535,7 +535,7 @@ kernel_thread (thread_func *function, void *aux)
 
 void update_priority(struct thread *t){
   t->priority = restaIntFromFP(
-    restaFP(
+      restaFP(
       converToFP(PRI_MAX),
       divintFP(
         t->recent_cpu,4
