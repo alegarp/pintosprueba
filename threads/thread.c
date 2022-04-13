@@ -15,6 +15,7 @@
 #include "userprog/process.h"
 #endif
 
+void *aux;
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
@@ -25,7 +26,6 @@
 static struct list ready_list;
 
 static struct list waitQueue;
-
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
@@ -73,6 +73,7 @@ static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
+bool funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -412,7 +413,7 @@ Nota: las prioridades van de 0 a 63
 */
 
 bool 
-funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux){
+funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     const struct thread *threada = list_entry(a, struct thread, elem);
     const struct thread *threadb = list_entry(b, struct thread, elem);
 
@@ -428,7 +429,7 @@ thread_set_priority (int new_priority)
 
   //obtnenemos el thread con la maxima prioridad de la ready list
   struct thread *actual = thread_current();
-  struct list_elem *element = list_max(&ready_list,&funcion_comparativa, NULL);
+  struct list_elem *element = list_max(&ready_list,&funcion_comparativa, aux);
   int max = list_entry(element, struct thread, elem)->priority;
   //thread_current ()->priority = new_priority;
   //ahora que??
@@ -630,7 +631,7 @@ next_thread_to_run (void)
   if (list_empty (&ready_list))
     return idle_thread;
   else{ 
-        list_sort(&ready_list, &funcion_comparativa, NULL);
+        list_sort(&ready_list, &funcion_comparativa, aux);
         return list_entry (list_pop_front (&ready_list), struct thread, elem);
 
   }
