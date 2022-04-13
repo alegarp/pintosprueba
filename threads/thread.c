@@ -20,6 +20,11 @@ void *aux;
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
 #define THREAD_MAGIC 0xcd6abf4b
+#define F (1<<14)
+
+
+
+
 
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
@@ -551,6 +556,19 @@ kernel_thread (thread_func *function, void *aux)
 }
 
 /* Returns the running thread. */
+int divintFP(int a, int b){
+  return a/b;
+}
+
+int converToFP(int n){
+  return n *F;
+}
+int restaFP(int a , int b){
+  return a-b;
+}
+restaIntFromFP(int a, int b){
+  return a-b*F;
+}
 
 void update_priority(struct thread *t){
   t->priority = restaIntFromFP( restaFP( converToFP(PRI_MAX), divintFP( t->recent_cpu,4)), (t->nice * 2));   
@@ -590,14 +608,14 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
-  //if(thread_mlfqs == true){
-   // update_priority(t);
-  //}
- // else{
+  if(thread_mlfqs == true){
+    update_priority(t);
+  }
+  else{
   t->priority = priority;
   t->originalT = priority;
 
-  //}
+  }
   t->dono = false;
   t->magic = THREAD_MAGIC;
 
@@ -724,3 +742,5 @@ allocate_tid (void)
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+
