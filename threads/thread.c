@@ -555,25 +555,14 @@ kernel_thread (thread_func *function, void *aux)
   thread_exit ();       /* If function() returns, kill the thread. */
 }
 
-/* Returns the running thread. */
-int divintFP(int a, int b){
-  return a/b;
-}
 
-int converToFP(int n){
-  return n *F;
-}
-int restaFP(int a , int b){
-  return a-b;
-}
-restaIntFromFP(int a, int b){
-  return a-b*F;
-}
 
 void update_priority(struct thread *t){
     t->priority =  ((PRI_MAX*F)-((t->recent_cpu)/4))-(t->nice*2)*F;
   //t->priority = restaIntFromFP( restaFP( converToFP(PRI_MAX), divintFP( t->recent_cpu,4) ), (t->nice * 2));   
 }
+
+/* Returns the running thread. */
 struct thread *
 running_thread (void) 
 {
