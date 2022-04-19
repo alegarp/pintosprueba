@@ -571,7 +571,8 @@ restaIntFromFP(int a, int b){
 }
 
 void update_priority(struct thread *t){
-  t->priority = restaIntFromFP( restaFP( converToFP(PRI_MAX), divintFP( t->recent_cpu,4)), (t->nice * 2));   
+    t->priority =  ((PRI_MAX*F)-((t->recent_cpu)/4))-(t->nice*2)*F;
+  //t->priority = restaIntFromFP( restaFP( converToFP(PRI_MAX), divintFP( t->recent_cpu,4) ), (t->nice * 2));   
 }
 struct thread *
 running_thread (void) 
@@ -722,7 +723,7 @@ schedule (void)
 
   if (cur != next)
     prev = switch_threads (cur, next);
-  thread_schedule_tail (prev);
+    thread_schedule_tail (prev);
 }
 
 /* Returns a tid to use for a new thread. */
