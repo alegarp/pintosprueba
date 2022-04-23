@@ -34,12 +34,20 @@
 /*------------------------------------------*/
 void *aux;
 bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
+bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
 
 
 bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     const struct thread *threada = list_entry(a, struct lock, lock_tiene);
     const struct thread *threadb = list_entry(b, struct lock, lock_tiene);
+
+    return (threada->priority) > (threadb->priority);
+}
+
+bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
+    const struct thread *threada = list_entry(a, struct thread, elem);
+    const struct thread *threadb = list_entry(b, struct thread, elem);
 
     return (threada->priority) > (threadb->priority);
 }
@@ -131,13 +139,14 @@ sema_up (struct semaphore *sema)
 
   old_level = intr_disable ();
   if (!list_empty (&sema->waiters)){
+        list_sort(&sema->waiters,&ordered_thread,aux);
         int thread_priority = list_entry (list_pop_front (&sema->waiters),
                                 struct thread, elem)->priority;
         thread_unblock (list_entry (list_pop_front (&sema->waiters),
                                 struct thread, elem));
           sema->value++;
           intr_set_level (old_level);
-          
+
           // wakes up one thread of those waiting for SEMA, if any
           if(thread_current()->priority <= thread_priority){
             thread_yield();
@@ -399,9 +408,13 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
   ASSERT (!intr_context ());
   ASSERT (lock_held_by_current_thread (lock));
 
-  if (!list_empty (&cond->waiters)) 
-    sema_up (&list_entry (list_pop_front (&cond->waiters),
+  if (!list_empty (&cond->waiters)) {
+
+        sema_up (&list_entry (list_pop_front (&cond->waiters),
                           struct semaphore_elem, elem)->semaphore);
+
+  }
+
 }
 
 /* Wakes up all threads, if any, waiting on COND (protected by
