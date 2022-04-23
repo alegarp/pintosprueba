@@ -57,8 +57,8 @@ bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *
     const struct semaphore_elem *semaphore_elema = list_entry(a, struct semaphore_elem, elem);
     const struct semaphore_elem *semaphore_elemb = list_entry(b, struct semaphore_elem, elem);
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
-    const struct thread *threada = list_entry(&(semaphore_elema->semaphore->waiters)  , struct thread, elem);
-    const struct thread *threadb = list_entry(&(semaphore_elemb->semaphore->waiters)  , struct thread, elem);
+    const struct thread *threada = list_entry(&((semaphore_elema->semaphore).waiters)  , struct thread, elem);
+    const struct thread *threadb = list_entry(&((semaphore_elemb->semaphore).waiters)  , struct thread, elem);
 
     return (threada->priority) > (threadb->priority);
 }
