@@ -195,6 +195,7 @@ lock_init (struct lock *lock)
   ASSERT (lock != NULL);
 
   lock->holder = NULL;
+  lock->priority = PRI_MAX;
   sema_init (&lock->semaphore, 1);
 }
 
@@ -231,10 +232,11 @@ lock_acquire (struct lock *lock)
         temporal->priority = actual->priority;
         temporal->holder->priority = temporal->priority;
         temporal->holder->dono = true;
+        temporal = temporal->holder->locks_intentan_adquirir;
        
       }
 
-       temporal = temporal->holder->locks_intentan_adquirir;
+       
     }
     
   }
@@ -281,7 +283,7 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
-/*  struct thread *actual = thread_current();
+  struct thread *actual = thread_current();
   //removemos de la lista 
   list_remove(&lock->lock_tiene);
   //preguntar si la lista de actual de los locks_intentan_adquirir esta bacia
@@ -296,7 +298,7 @@ lock_release (struct lock *lock)
     
     actual->priority = temp->priority;
 
-  }*/
+  }
   
   sema_up (&lock->semaphore);
 }
