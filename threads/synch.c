@@ -293,9 +293,7 @@ lock_release (struct lock *lock)
     actual->priority = actual->originalT;
   }else{
     struct lock *temp = list_entry(list_front(&actual->Locks), struct lock, lock_tiene);
-   
-    printf(actual->originalT);
-    printf(temp->priority);
+    
     actual->priority = temp->priority;
 
   }
