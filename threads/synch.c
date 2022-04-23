@@ -52,17 +52,17 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 
     return (threada->priority) > (threadb->priority);
 }
-
+/*
 bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     struct semaphore sa = (list_entry(a, struct semaphore_elem, elem))->semaphore;
     struct semaphore sb = (list_entry(b, struct semaphore_elem, elem))->semaphore;
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
-     struct thread *threada = list_entry(list_front(&(sa.waiters))  , struct thread, elem);
-     struct thread *threadb = list_entry(list_front(&(sb.waiters))  , struct thread, elem);
+     struct thread *threada = list_entry(list_front(&(sa.waiters)), struct thread, elem);
+     struct thread *threadb = list_entry(list_front(&(sb.waiters)), struct thread, elem);
 
     return (threada->priority) > (threadb->priority);
 }
-
+*/
 
 /*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
