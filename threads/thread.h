@@ -91,9 +91,9 @@ struct thread
     struct list_elem allelem;           /* List element for all threads list. */
 
   	 int tim_sleep;
-    struct list Locks;                  /*Los Locks que tiene el thread*/
-    struct locksTryAcquire;             /*Locks que intentan hacer acquire*/
-
+    struct list Locks;                     /*Los Locks que tiene el thread*/
+    struct list  locksTryAcquire;          /*Locks que intentan hacer acquire*/
+    struct lock *locks_intentan_adquirir;  /*Locks que intentan hacer acquire de tipo lock*/
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 

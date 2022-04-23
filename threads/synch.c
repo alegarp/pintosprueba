@@ -31,7 +31,20 @@
 #include <string.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+/*------------------------------------------*/
+void *aux;
+bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
+
+
+bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
+    const struct thread *threada = list_entry(a, struct lock, lock_tiene);
+    const struct thread *threadb = list_entry(b, struct lock, lock_tiene);
+
+    return (threada->priority) > (threadb->priority);
+}
+
+/*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
    manipulating it:
@@ -192,12 +205,10 @@ lock_init (struct lock *lock)
    This function may sleep, so it must not be called within an
    interrupt handler.  This function may be called with
    interrupts disabled, but interrupts will be turned back on if
-   we need to sleep. */
+   we need to sleep. 
 
-/*
+el thread actual adquiere el lock.
 
-el que adquiere el lock,
- 
 */
 void
 lock_acquire (struct lock *lock)
@@ -207,8 +218,33 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
   struct thread * actual = thread_current();
   sema_down (&lock->semaphore);
+  //guardamos el lock que se intento adquirir en actual
+  actual->locks_intentan_adquirir = lock;
+
+  if(lock->holder != NULL){
+
+    while (lock != NULL)
+    {
+      /* code */
+     // si es menor se hace donacion
+      if(lock->priority < actual->priority){
+        lock->priority = actual->priority;
+        lock->holder->priority = lock->priority;
+        lock->holder->dono = true;
+        lock = lock->holder->locks_intentan_adquirir;
+      }
+    }
+    
+  }
+
+
+
+
+
   lock->priority = actual->priority;
   lock->holder = thread_current ();
+  actual->locks_intentan_adquirir = NULL;
+  list_insert_ordered(&actual->Locks, &lock->lock_tiene,ordered,aux);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
