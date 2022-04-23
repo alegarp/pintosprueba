@@ -35,6 +35,7 @@
 void *aux;
 bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
+bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
 
 
@@ -51,6 +52,17 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 
     return (threada->priority) > (threadb->priority);
 }
+//los
+bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
+    const struct semaphore_elem *semaphore_elema = list_entry(a, struct semaphore_elem, elem);
+    const struct semaphore_elem *semaphore_elemb = list_entry(b, struct semaphore_elem, elem);
+    //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
+    const struct thread *threada = list_entry((semaphore_elema->semaphore->waiters)  , struct thread, elem);
+    const struct thread *threadb = list_entry((semaphore_elemb->semaphore->waiters)  , struct thread, elem);
+
+    return (threada->priority) > (threadb->priority);
+}
+
 
 /*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
@@ -269,7 +281,7 @@ lock_acquire (struct lock *lock)
   struct thread *actual = thread_current();
 
   //donación
-  acquire_recurcion(lock, actual);
+  //acquire_recurcion(lock, actual);
 
   sema_down (&lock->semaphore);
   lock->priority = actual->priority;
@@ -325,10 +337,10 @@ lock_release (struct lock *lock)
   lock->holder = NULL;
   struct thread *actual = thread_current();
   list_remove(&lock->lock_tiene);
-  if(list_empty(&actual->Locks)){
+/* if(list_empty(&actual->Locks)){
     actual->priority = actual->originalT;
     actual->dono = false;
-  }
+  }*/
 
 
 
@@ -419,6 +431,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
   if (!list_empty (&cond->waiters)) {
         //deveria ordenarlo??
+        list_sort(&cond->waiters,&ordered_cond ,aux);
         sema_up (&list_entry (list_pop_front (&cond->waiters),
                           struct semaphore_elem, elem)->semaphore);
 
