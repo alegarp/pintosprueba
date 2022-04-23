@@ -238,6 +238,15 @@ el thread actual adquiere el lock.
 void
 lock_acquire (struct lock *lock)
 {
+
+  /*
+  adquiere para el subproceso actual, primero espera a que cualquier
+  propietario actual lo libere si es necesario. lock
+  **Aplicamos lo de donacion.
+  **bajamos el semaforo
+  **cambiamos la prioridad del lock si..
+  **metemos el current thread en la lista de elementos del lock.
+  */
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
@@ -274,6 +283,14 @@ lock_try_acquire (struct lock *lock)
 void
 lock_release (struct lock *lock) 
 {
+
+  //realease, que el current thread debe poseer.lock
+  /*
+  **quitamos lo de donacion
+  **levantamos el semaforo
+  
+  */
+
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
