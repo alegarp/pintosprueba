@@ -243,10 +243,10 @@ lock_acquire (struct lock *lock)
 
 
   sema_down (&lock->semaphore);
- // lock->priority = actual->priority;
+  lock->priority = actual->priority;
   lock->holder = thread_current ();
- // actual->locks_intentan_adquirir = NULL;
- // list_insert_ordered(&actual->Locks, &lock->lock_tiene,ordered,aux);
+  actual->locks_intentan_adquirir = NULL;
+  list_insert_ordered(&actual->Locks, &lock->lock_tiene,ordered,aux);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
