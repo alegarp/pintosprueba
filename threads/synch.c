@@ -35,7 +35,7 @@
 void *aux;
 bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
-//bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
+bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
 
 
@@ -52,17 +52,17 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 
     return (threada->priority) > (threadb->priority);
 }
-/*
+
 bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
-    struct semaphore sa = (list_entry(a, struct semaphore_elem, elem))->semaphore;
-    struct semaphore sb = (list_entry(b, struct semaphore_elem, elem))->semaphore;
+    struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
+    struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
-     struct thread *threada = list_entry(list_front(&(sa.waiters)), struct thread, elem);
-     struct thread *threadb = list_entry(list_front(&(sb.waiters)), struct thread, elem);
+     struct thread *threada = list_entry(list_front(&sa->semaphore.waiters), struct thread, elem);
+     struct thread *threadb = list_entry(list_front(&sb->semaphore.waiters), struct thread, elem);
 
     return (threada->priority) > (threadb->priority);
 }
-*/
+
 
 /*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
@@ -278,17 +278,26 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
-  struct thread *actual = thread_current();
 
-  //donación
-  //acquire_recurcion(lock, actual);
+  //desabilitamos interrupciones
+  enum intr_level old_level = intr_disable();
+
+  struct thread *actual = thread_current();
+  
+
+  if(lock->holder != NULL){ //alguien más tiene el lock
+    actual->locks_intentan_adquirir =lock;
+      //aplicamos donación
+
+
+  }
+
 
   sema_down (&lock->semaphore);
-  lock->priority = actual->priority;
   lock->holder = thread_current ();
-  //agregamos un lock a la lista Locks, por los locks que tiene el thread.
- // actual->locks_intentan_adquirir = NULL;
- // list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux);
+  intr_set_level(old_level);
+
+
 
 
 }
