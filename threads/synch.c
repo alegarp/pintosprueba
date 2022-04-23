@@ -217,7 +217,6 @@ lock_acquire (struct lock *lock)
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
   struct thread * actual = thread_current();
-  sema_down (&lock->semaphore);
   //guardamos el lock que se intento adquirir en actual
   actual->locks_intentan_adquirir = lock;
 
@@ -243,7 +242,7 @@ lock_acquire (struct lock *lock)
 
 
 
-
+  sema_down (&lock->semaphore);
   lock->priority = actual->priority;
   lock->holder = thread_current ();
   actual->locks_intentan_adquirir = NULL;
@@ -282,6 +281,10 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
+  struct thread *actual = thread_current();
+  //removemos de la lista 
+  list_remove(&lock->lock_tiene);
+
   sema_up (&lock->semaphore);
 }
 
