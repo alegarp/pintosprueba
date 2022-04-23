@@ -235,6 +235,19 @@ lock_init (struct lock *lock)
 el thread actual adquiere el lock.
 
 */
+
+void 
+acquire_recurcion(struct lock *lock,struct lock *actual){
+  if(lock != NULL){
+    if(lock->priority < actual->priority){
+      lock->priority = actual->priority;
+      lock->holder->priority = actual->priority;
+    }
+    lock = lock->holder->locks_intentan_adquirir;
+    acquire_recurcion(lock, actual);
+
+  }
+}
 void
 lock_acquire (struct lock *lock)
 {
@@ -246,19 +259,24 @@ lock_acquire (struct lock *lock)
   **bajamos el semaforo
   **cambiamos la prioridad del lock si..
   **metemos el current thread en la lista de elementos del lock.
+
+
   */
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
   struct thread *actual = thread_current();
 
-
-
+  //donación
+  acquire_recurcion(lock, actual);
 
   sema_down (&lock->semaphore);
   lock->priority = actual->priority;
   lock->holder = thread_current ();
-  
+  //agregamos un lock a la lista Locks, por los locks que tiene el thread.
+  actual->locks_intentan_adquirir = NULL;
+  list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux);
+
 
 }
 
