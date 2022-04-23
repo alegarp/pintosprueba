@@ -431,7 +431,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
   if (!list_empty (&cond->waiters)) {
         //deveria ordenarlo??
-    //    list_sort(&cond->waiters,&ordered_cond ,aux);
+        list_sort(&cond->waiters,&ordered_cond ,aux);
         sema_up (&list_entry (list_pop_front (&cond->waiters),
                           struct semaphore_elem, elem)->semaphore);
 
