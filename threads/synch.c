@@ -52,7 +52,7 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 
     return (threada->priority) > (threadb->priority);
 }
-
+/*
 bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
     struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
@@ -63,7 +63,7 @@ bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *
     return (threada->priority) > (threadb->priority);
 }
 
-
+*/
 /*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
