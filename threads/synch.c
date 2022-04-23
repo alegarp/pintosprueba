@@ -242,6 +242,7 @@ acquire_recurcion(struct lock *lock,struct lock *actual){
     if(lock->priority < actual->priority){
       lock->priority = actual->priority;
       lock->holder->priority = actual->priority;
+      lock->holder->dono = true;
     }
     lock = lock->holder->locks_intentan_adquirir;
     acquire_recurcion(lock, actual);
@@ -311,7 +312,9 @@ lock_release (struct lock *lock)
 
   //realease, que el current thread debe poseer.lock
   /*
+  ** tambien hay que remover el lock de la lista de los locks
   **quitamos lo de donacion
+
   **levantamos el semaforo
   
   */
@@ -320,6 +323,16 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
+  struct thread *actual = thread_current();
+  list_remove(&lock->lock_tiene);
+  if(list_empty(&actual->Locks)){
+    actual->priority = actual->originalT;
+    actual->dono = false;
+  }
+
+
+
+
   sema_up (&lock->semaphore);
 }
 
