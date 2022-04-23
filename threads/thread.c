@@ -606,11 +606,12 @@ init_thread (struct thread *t, const char *name, int priority)
   t->originalT = priority;
 
   }
-  t->dono = false;
-  t->magic = THREAD_MAGIC;
   list_init(&t->Locks);
   list_init(&t->locksTryAcquire);
   t->locks_intentan_adquirir=NULL;
+  t->dono = false;
+  t->magic = THREAD_MAGIC;
+
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
