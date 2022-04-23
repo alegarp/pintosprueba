@@ -218,14 +218,14 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
   struct thread * actual = thread_current();
   //guardamos el lock que se intento adquirir en actual
- /* actual->locks_intentan_adquirir = lock;
+  actual->locks_intentan_adquirir = lock;
 
   struct lock *temporal = lock;
   if(lock->holder != NULL){
 
     while (temporal != NULL)
     {
-      /* code *
+      /* code */
      // si es menor se hace donacion
       if(temporal->priority < actual->priority){
         temporal->priority = actual->priority;
@@ -237,7 +237,7 @@ lock_acquire (struct lock *lock)
        temporal = temporal->holder->locks_intentan_adquirir;
     }
     
-  }*/
+  }
 
 
 
