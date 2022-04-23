@@ -217,8 +217,8 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
-  struct thread * actual = thread_current();
-  //guardamos el lock que se intento adquirir en actual
+/*  struct thread * actual = thread_current();
+  guardamos el lock que se intento adquirir en actual
   actual->locks_intentan_adquirir = lock;
 
   struct lock *temporal = lock;
@@ -226,7 +226,7 @@ lock_acquire (struct lock *lock)
 
     while (temporal != NULL)
     {
-      /* code */
+      /* code *
      // si es menor se hace donacion
       if(temporal->priority < actual->priority){
         temporal->priority = actual->priority;
@@ -243,12 +243,12 @@ lock_acquire (struct lock *lock)
 
 
 
-
+*/
   sema_down (&lock->semaphore);
-  lock->priority = actual->priority;
+//  lock->priority = actual->priority;
   lock->holder = thread_current ();
-  actual->locks_intentan_adquirir = NULL;
-  list_insert_ordered(&actual->Locks, &lock->lock_tiene,ordered,aux);
+ // actual->locks_intentan_adquirir = NULL;
+ // list_insert_ordered(&actual->Locks, &lock->lock_tiene,ordered,aux);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -283,14 +283,14 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
-  struct thread *actual = thread_current();
+ // struct thread *actual = thread_current();
   //removemos de la lista 
-  list_remove(&lock->lock_tiene);
+ // list_remove(&lock->lock_tiene);
   //preguntar si la lista de actual de los locks_intentan_adquirir esta bacia
       // Restaurar donacion de actual
       //
 
-  if(!list_empty(&actual->Locks)){
+  /*if(!list_empty(&actual->Locks)){
     actual->dono = true;
     actual->priority = actual->originalT;
   }else{
@@ -298,7 +298,7 @@ lock_release (struct lock *lock)
     
     actual->priority = temp->priority;
 
-  }
+  }*/
   
   sema_up (&lock->semaphore);
 }
