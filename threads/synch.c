@@ -284,7 +284,22 @@ lock_release (struct lock *lock)
   struct thread *actual = thread_current();
   //removemos de la lista 
   list_remove(&lock->lock_tiene);
+  //preguntar si la lista de actual de los locks_intentan_adquirir esta bacia
+      // Restaurar donacion de actual
+      //
 
+  if(!list_empty(&actual->Locks)){
+    actual->dono = true;
+    actual->priority = actual->originalT;
+  }else{
+    struct lock *temp = list_entry(list_front(&actual->Locks), struct lock, lock_tiene);
+   
+    printf(actual->originalT);
+    printf(temp->priority);
+    actual->priority = temp->priority;
+
+  }
+  
   sema_up (&lock->semaphore);
 }
 
