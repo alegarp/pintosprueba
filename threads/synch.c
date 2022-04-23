@@ -248,19 +248,7 @@ el thread actual adquiere el lock.
 
 */
 
-void 
-acquire_recurcion(struct lock *lock,struct lock *actual){
-  if(lock != NULL){
-    if(lock->priority < actual->priority){
-      lock->priority = actual->priority;
-      lock->holder->priority = actual->priority;
-      lock->holder->dono = true;
-    }
-    lock = lock->holder->locks_intentan_adquirir;
-    acquire_recurcion(lock, actual);
 
-  }
-}
 void
 lock_acquire (struct lock *lock)
 {
@@ -290,11 +278,14 @@ lock_acquire (struct lock *lock)
       //aplicamos donación
 
 
+  }else{
+    actual->locks_intentan_adquirir = NULL;
   }
 
 
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
+  //retornamos a las interrupciones, antes de..
   intr_set_level(old_level);
 
 
