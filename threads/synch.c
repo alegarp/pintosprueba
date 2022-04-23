@@ -221,11 +221,11 @@ lock_acquire (struct lock *lock)
   actual->locks_intentan_adquirir = lock;
 
   struct lock *temporal = lock;
-  if(lock->holder != NULL){
+  /*if(lock->holder != NULL){
 
     while (temporal != NULL)
     {
-      /* code */
+      /* code *
      // si es menor se hace donacion
       if(temporal->priority < actual->priority){
         temporal->priority = actual->priority;
@@ -237,7 +237,7 @@ lock_acquire (struct lock *lock)
        temporal = temporal->holder->locks_intentan_adquirir;
     }
     
-  }
+  }*/
 
 
 
