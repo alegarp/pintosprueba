@@ -250,8 +250,15 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
+  struct thread *actual = thread_current();
+
+
+
+
   sema_down (&lock->semaphore);
+  lock->priority = actual->priority;
   lock->holder = thread_current ();
+  
 
 }
 
