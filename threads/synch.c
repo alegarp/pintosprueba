@@ -54,11 +54,11 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 }
 //los
 bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
-    const struct semaphore_elem *semaphore_elema = list_entry(a, struct semaphore_elem, elem);
-    const struct semaphore_elem *semaphore_elemb = list_entry(b, struct semaphore_elem, elem);
+    const struct semaphore *semaphorea = list_entry(a, struct semaphore_elem, elem)->semaphore;
+    const struct semaphore *semaphoreb = list_entry(b, struct semaphore_elem, elem)->semaphore;
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
-    const struct thread *threada = list_entry(&((semaphore_elema->semaphore).waiters)  , struct thread, elem);
-    const struct thread *threadb = list_entry(&((semaphore_elemb->semaphore).waiters)  , struct thread, elem);
+    const struct thread *threada = list_entry(&((semaphorea).waiters)  , struct thread, elem);
+    const struct thread *threadb = list_entry(&((semaphoreb).waiters)  , struct thread, elem);
 
     return (threada->priority) > (threadb->priority);
 }
@@ -431,7 +431,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
   if (!list_empty (&cond->waiters)) {
         //deveria ordenarlo??
-        list_sort(&cond->waiters,&ordered_cond ,aux);
+    //    list_sort(&cond->waiters,&ordered_cond ,aux);
         sema_up (&list_entry (list_pop_front (&cond->waiters),
                           struct semaphore_elem, elem)->semaphore);
 
