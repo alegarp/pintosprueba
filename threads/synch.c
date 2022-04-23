@@ -35,7 +35,7 @@
 void *aux;
 bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
-bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
+//bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
 
 
@@ -52,7 +52,7 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 
     return (threada->priority) > (threadb->priority);
 }
-//los
+/*
 bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     struct semaphore semaphorea = list_entry(a, struct semaphore_elem, elem)->semaphore;
     struct semaphore semaphoreb = list_entry(b, struct semaphore_elem, elem)->semaphore;
@@ -62,7 +62,7 @@ bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *
 
     return (threada->priority) > (threadb->priority);
 }
-
+*/
 
 /*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
@@ -431,7 +431,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
   if (!list_empty (&cond->waiters)) {
         //deveria ordenarlo??
-        list_sort(&cond->waiters,&ordered_cond ,aux);
+      //  list_sort(&cond->waiters,&ordered_cond ,aux);
         sema_up (&list_entry (list_pop_front (&cond->waiters),
                           struct semaphore_elem, elem)->semaphore);
 
