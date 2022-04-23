@@ -477,7 +477,7 @@ thread_set_nice (int nice UNUSED)
     ASSERT(is_thread(thread_current()));
 
   thread_current ()->nice = nice;
-  update_priority(thread_current());
+  //update_priority(thread_current());
 
 }
 
