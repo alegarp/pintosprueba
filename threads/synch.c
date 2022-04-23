@@ -232,8 +232,10 @@ lock_acquire (struct lock *lock)
         temporal->priority = actual->priority;
         temporal->holder->priority = temporal->priority;
         temporal->holder->dono = true;
-        temporal = temporal->holder->locks_intentan_adquirir;
+       
       }
+
+       temporal = temporal->holder->locks_intentan_adquirir;
     }
     
   }
