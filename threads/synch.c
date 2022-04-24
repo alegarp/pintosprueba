@@ -287,22 +287,14 @@ lock_acquire (struct lock *lock)
       }
       
     }
-    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
-    
 
-
-  }else{
-    actual->locks_intentan_adquirir = NULL;
   }
-
-
+   actual->locks_intentan_adquirir = NULL;
+  list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
   //retornamos a las interrupciones, antes de..
   intr_set_level(old_level);
-
-
-
 
 }
 
