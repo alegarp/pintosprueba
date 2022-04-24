@@ -147,4 +147,10 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 void update_priority(struct thread *t);
 
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++
+void insertar_en_lista_espera(int64_t ticks);
+void remover_thread_durmiente(int64_t ticks);
+bool funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void *aux);
+
 #endif /* threads/thread.h */
