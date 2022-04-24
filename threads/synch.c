@@ -261,6 +261,8 @@ lock_acquire (struct lock *lock)
   //enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
+  // si es multilevel feedback queue, no necesita cambiar la prioridad del thread, 
+  // ya que no se hace donacion de prioridad
   if(thread_mlfqs == false){
 
 

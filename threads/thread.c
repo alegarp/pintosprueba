@@ -266,7 +266,7 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-  // Yield condition
+  // Yield condition, solo es aplicado cuando se usa RR
   if(thread_mlfqs == false && priority > thread_current()->priority)
       thread_yield();
     
@@ -428,7 +428,11 @@ funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void
 void
 thread_set_priority (int new_priority) 
 {
-
+  // si es multilevel feedback queue, no necesita cambiar la prioridad del thread, ya que no 
+  // se hace donacion de prioridad
+  if(thread_mlfqs == true){
+    return;
+  }
 //  ASSERT (thread_current() != NULL);
   ASSERT (PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
