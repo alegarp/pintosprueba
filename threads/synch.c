@@ -438,7 +438,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
   if (!list_empty (&cond->waiters)) {
         //deveria ordenarlo??
-      //  list_sort(&cond->waiters,&ordered_cond ,aux);
+        list_sort(&cond->waiters,&ordered_cond ,aux);
         sema_up (&list_entry (list_pop_front (&cond->waiters),
                           struct semaphore_elem, elem)->semaphore);
 
@@ -448,15 +448,17 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
 
 
 static bool ordenar_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
-    struct semaphore sa = list_entry(a, struct semaphore_elem, elem)->semaphore;
-    struct semaphore sb = list_entry(b, struct semaphore_elem, elem)->semaphore;
+    struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
+    struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
-    // struct thread *threada = list_entry(list_front(&sa->semaphore.waiters), struct thread, elem);
-    // struct thread *threadb = list_entry(list_front(&sb->semaphore.waiters), struct thread, elem);
+    struct thread *threada = list_entry(list_front(&sa->semaphore.waiters), struct thread, elem);
+    struct thread *threadb = list_entry(list_front(&sb->semaphore.waiters), struct thread, elem);
 
-  //  return (threada->priority) > (threadb->priority);
-    return true;
+    return (threada->priority) > (threadb->priority);
+  //  return true;
 }
+
+
 
 /* Wakes up all threads, if any, waiting on COND (protected by
    LOCK).  LOCK must be held before calling this function.
