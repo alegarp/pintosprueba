@@ -271,9 +271,10 @@ lock_acquire (struct lock *lock)
   enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
-  
+  actual->locks_intentan_adquirir =lock;
+
+
   if(lock->holder != NULL){ //alguien más tiene el lock
-    actual->locks_intentan_adquirir =lock;
     struct lock *temp = lock;
       //aplicamos donación
     while (lock != NULL)
