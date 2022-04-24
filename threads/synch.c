@@ -287,6 +287,7 @@ lock_acquire (struct lock *lock)
       }
       
     }
+    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
     
 
 
@@ -349,7 +350,7 @@ lock_release (struct lock *lock)
   //desabilitamos interrupciones
   enum intr_level old_level = intr_disable();
 
-  
+
   lock->holder = NULL;
   struct thread *actual = thread_current();
   list_remove(&lock->lock_tiene);
