@@ -282,11 +282,13 @@ lock_acquire (struct lock *lock)
     }
 
   }
+
+   sema_down (&lock->semaphore);
+   lock->holder = thread_current ();
    actual->locks_intentan_adquirir = NULL;
    lock->priority = actual->priority;
-  list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
-  sema_down (&lock->semaphore);
-  lock->holder = thread_current ();
+   list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
+
   //retornamos a las interrupciones, antes de..
  // intr_set_level(old_level);
 
