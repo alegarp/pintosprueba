@@ -258,7 +258,7 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
-  enum intr_level old_level = intr_disable();
+ // enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
   // si es multilevel feedback queue, no necesita cambiar la prioridad del thread, 
@@ -272,7 +272,7 @@ lock_acquire (struct lock *lock)
   if(lock->holder != NULL){ //alguien más tiene el lock
     struct lock *temp = lock;
       //aplicamos donación
-    while (lock != NULL)
+    while (temp != NULL)
     {
       if (temp->priority > actual->priority)
       {
@@ -296,7 +296,7 @@ lock_acquire (struct lock *lock)
    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
   }
   //retornamos a las interrupciones, antes de..
-  intr_set_level(old_level);
+ // intr_set_level(old_level);
 
 }
 
