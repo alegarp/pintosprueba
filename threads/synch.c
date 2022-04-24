@@ -291,6 +291,7 @@ lock_acquire (struct lock *lock)
 
   }
    actual->locks_intentan_adquirir = NULL;
+   lock->priority = actual->priority;
   list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
