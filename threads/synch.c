@@ -275,7 +275,20 @@ lock_acquire (struct lock *lock)
 
   if(lock->holder != NULL){ //alguien más tiene el lock
     actual->locks_intentan_adquirir =lock;
+    struct lock *temp = lock;
       //aplicamos donación
+    while (lock != NULL)
+    {
+      if (temp->priority < actual->priority)
+      {
+         temp->priority = actual->priority;
+         temp->holder->priority = temp->priority;
+         temp->holder->dono = true;
+         temp = temp->holder->locks_intentan_adquirir;
+      }
+      
+    }
+    
 
 
   }else{
