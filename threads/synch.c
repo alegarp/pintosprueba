@@ -252,8 +252,6 @@ lock_acquire (struct lock *lock)
   **bajamos el semaforo
   **cambiamos la prioridad del lock si..
   **metemos el current thread en la lista de elementos del lock.
-
-
   */
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
@@ -263,6 +261,9 @@ lock_acquire (struct lock *lock)
   //enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
+  if(thread_mlfqs == false){
+
+
   actual->locks_intentan_adquirir =lock;
 
 
@@ -282,13 +283,16 @@ lock_acquire (struct lock *lock)
     }
 
   }
+  }
 
    sema_down (&lock->semaphore);
    lock->priority = actual->priority;
    lock->holder = actual;
+  if(thread_mlfqs == false){
+
    actual->locks_intentan_adquirir = NULL;
    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
-
+  }
   //retornamos a las interrupciones, antes de..
  // intr_set_level(old_level);
 
@@ -339,6 +343,7 @@ lock_release (struct lock *lock)
 //  enum intr_level old_level = intr_disable();
   lock->holder = NULL;
   struct thread *actual = thread_current();
+  if(thread_mlfqs == false){
 
   list_remove(&lock->lock_tiene);
  if(list_empty(&actual->Locks)){
@@ -346,7 +351,7 @@ lock_release (struct lock *lock)
     actual->dono = false;
   }else{
     actual->priority = list_entry(list_front(&actual->Locks), struct lock,lock_tiene )->priority;
-  }
+  }}
 
 
 
