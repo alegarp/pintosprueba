@@ -346,6 +346,10 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
+  //desabilitamos interrupciones
+  enum intr_level old_level = intr_disable();
+
+  
   lock->holder = NULL;
   struct thread *actual = thread_current();
   list_remove(&lock->lock_tiene);
@@ -360,6 +364,8 @@ lock_release (struct lock *lock)
 
 
   sema_up (&lock->semaphore);
+    //retornamos a las interrupciones, antes de..
+  intr_set_level(old_level);
 }
 
 /* Returns true if the current thread holds LOCK, false
