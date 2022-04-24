@@ -272,7 +272,6 @@ lock_acquire (struct lock *lock)
 
   struct thread *actual = thread_current();
   
-
   if(lock->holder != NULL){ //alguien más tiene el lock
     actual->locks_intentan_adquirir =lock;
     struct lock *temp = lock;
@@ -348,12 +347,14 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
- /* struct thread *actual = thread_current();
+  struct thread *actual = thread_current();
   list_remove(&lock->lock_tiene);
  if(list_empty(&actual->Locks)){
     actual->priority = actual->originalT;
     actual->dono = false;
-  }*/
+  }else{
+    actual->priority = list_entry(list_front(&actual->Locks), struct lock,lock_tiene )->priority;
+  }
 
 
 
