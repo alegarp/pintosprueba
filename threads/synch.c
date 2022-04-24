@@ -35,7 +35,7 @@
 void *aux;
 bool ordered( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
-static bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
+static bool ordenar_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED);
 
 
 
@@ -53,7 +53,7 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
     return (threada->priority) > (threadb->priority);
 }
 
-static bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
+static bool ordenar_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     struct semaphore sa = list_entry(a, struct semaphore_elem, elem)->semaphore;
     struct semaphore sb = list_entry(b, struct semaphore_elem, elem)->semaphore;
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
