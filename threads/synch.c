@@ -52,18 +52,19 @@ bool ordered_thread( const struct list_elem *a, const struct list_elem *b,  void
 
     return (threada->priority) > (threadb->priority);
 }
-/*
+
 bool ordered_cond( const struct list_elem *a, const struct list_elem *b,  void *aux UNUSED){
     struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
     struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
     //semaphore_elem en semaphore hay una lista de los threads que estan esperando.
-     struct thread *threada = list_entry(list_front(&sa->semaphore.waiters), struct thread, elem);
-     struct thread *threadb = list_entry(list_front(&sb->semaphore.waiters), struct thread, elem);
+    // struct thread *threada = list_entry(list_front(&sa->semaphore.waiters), struct thread, elem);
+    // struct thread *threadb = list_entry(list_front(&sb->semaphore.waiters), struct thread, elem);
 
-    return (threada->priority) > (threadb->priority);
+  //  return (threada->priority) > (threadb->priority);
+    return true;
 }
 
-*/
+
 /*------------------------------------------*/
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
