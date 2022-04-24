@@ -274,7 +274,7 @@ lock_acquire (struct lock *lock)
       //aplicamos donación
     while (temp != NULL)
     {
-      if (temp->priority > actual->priority)
+      if (temp->priority < actual->priority)
       {
          temp->priority = actual->priority;
          temp->holder->priority = temp->priority;
