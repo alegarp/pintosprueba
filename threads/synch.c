@@ -223,7 +223,7 @@ lock_init (struct lock *lock)
   ASSERT (lock != NULL);
 
   lock->holder = NULL;
-  lock->priority = PRI_MAX;
+  lock->priority = PRI_MAX; //inicializar la prioridad
   sema_init (&lock->semaphore, 1);
 }
 
@@ -260,7 +260,7 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
-  enum intr_level old_level = intr_disable();
+  //enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
   actual->locks_intentan_adquirir =lock;
@@ -288,7 +288,7 @@ lock_acquire (struct lock *lock)
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
   //retornamos a las interrupciones, antes de..
-  intr_set_level(old_level);
+ // intr_set_level(old_level);
 
 }
 
@@ -334,11 +334,10 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
-  enum intr_level old_level = intr_disable();
-
-
+//  enum intr_level old_level = intr_disable();
   lock->holder = NULL;
   struct thread *actual = thread_current();
+
   list_remove(&lock->lock_tiene);
  if(list_empty(&actual->Locks)){
     actual->priority = actual->originalT;
@@ -352,7 +351,7 @@ lock_release (struct lock *lock)
 
   sema_up (&lock->semaphore);
     //retornamos a las interrupciones, antes de..
-  intr_set_level(old_level);
+ // intr_set_level(old_level);
 }
 
 /* Returns true if the current thread holds LOCK, false
