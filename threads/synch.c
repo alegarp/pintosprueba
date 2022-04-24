@@ -265,14 +265,14 @@ lock_acquire (struct lock *lock)
   // ya que no se hace donacion de prioridad
   if(thread_mlfqs == false){
 
-
+  //guardamos el lock, en los losks que intenta hacer aquire
   actual->locks_intentan_adquirir =lock;
 
 
   if(lock->holder != NULL){ //alguien más tiene el lock
     struct lock *temp = lock;
       //aplicamos donación
-    while (temp != NULL)
+    while (lock != NULL)
     {
       if (temp->priority < actual->priority)
       {
@@ -284,7 +284,10 @@ lock_acquire (struct lock *lock)
       
     }
 
+  }{
+    actual->locks_intentan_adquirir = NULL;
   }
+
   }
 
    sema_down (&lock->semaphore);
