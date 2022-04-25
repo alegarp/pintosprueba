@@ -97,7 +97,7 @@ void
 thread_init (void) 
 {
   ASSERT (intr_get_level () == INTR_OFF);
-
+  //inicaimos las listas
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
@@ -485,7 +485,6 @@ thread_set_nice (int nice UNUSED)
     ASSERT(is_thread(thread_current()));
 
   thread_current ()->nice = nice;
-  //update_priority(thread_current());
 
 }
 

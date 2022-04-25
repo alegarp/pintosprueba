@@ -272,7 +272,7 @@ lock_acquire (struct lock *lock)
   if(lock->holder != NULL){ //alguien más tiene el lock
     struct lock *temp = lock;
       //aplicamos donación
-    while (lock != NULL)
+    while (temp != NULL)
     {
       if (temp->priority < actual->priority)
       {
@@ -284,9 +284,11 @@ lock_acquire (struct lock *lock)
       
     }
 
-  }{
-    actual->locks_intentan_adquirir = NULL;
   }
+  
+  /*else{
+    actual->locks_intentan_adquirir = NULL;
+  }*/
 
   }
 
@@ -351,9 +353,11 @@ lock_release (struct lock *lock)
 
   list_remove(&lock->lock_tiene);
  if(list_empty(&actual->Locks)){
+
     actual->priority = actual->originalT;
     actual->dono = false;
   }else{
+    //obtenemos el primer thread de la lista de locks, y cambiamos la prioridad del thread actual.
     actual->priority = list_entry(list_front(&actual->Locks), struct lock,lock_tiene )->priority;
   }
   
