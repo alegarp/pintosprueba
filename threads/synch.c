@@ -258,7 +258,7 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
- // enum intr_level old_level = intr_disable();
+  enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
   // si es multilevel feedback queue, no necesita cambiar la prioridad del thread, 
@@ -301,7 +301,7 @@ lock_acquire (struct lock *lock)
    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
   }
   //retornamos a las interrupciones, antes de..
- // intr_set_level(old_level);
+  intr_set_level(old_level);
 
 }
 
@@ -346,7 +346,7 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
-//  enum intr_level old_level = intr_disable();
+  enum intr_level old_level = intr_disable();
   lock->holder = NULL;
   struct thread *actual = thread_current();
   if(thread_mlfqs == false){
@@ -368,7 +368,7 @@ lock_release (struct lock *lock)
 
   sema_up (&lock->semaphore);
     //retornamos a las interrupciones, antes de..
- // intr_set_level(old_level);
+  intr_set_level(old_level);
 }
 
 /* Returns true if the current thread holds LOCK, false
