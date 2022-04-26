@@ -360,8 +360,9 @@ lock_release (struct lock *lock)
   }
   
   }
-  msg(actual->priority);
-  msg(actual->originalT);
+  print(actual->priority);
+  
+  print(actual->originalT);
 
 
 
