@@ -360,9 +360,8 @@ lock_release (struct lock *lock)
   }
   
   }
-  printf(actual->priority);
-  printf(actual->originalT);
-
+ // printf(actual->priority);
+ // printf(actual->originalT);
 
 
 
