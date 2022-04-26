@@ -564,7 +564,8 @@ kernel_thread (thread_func *function, void *aux)
 
 
 void update_priority(struct thread *t){
-    t->priority =  ((PRI_MAX*F)-((t->recent_cpu)/4))-(t->nice*2)*F;
+   // t->priority =  ((PRI_MAX*F)-((t->recent_cpu)/4))-(t->nice*2)*F;
+   t->priority =  ((PRI_MAX)-((t->recent_cpu)/4))-(t->nice*2);
 }
 
 /* Returns the running thread. */

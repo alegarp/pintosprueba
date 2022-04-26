@@ -239,8 +239,6 @@ lock_init (struct lock *lock)
 el thread actual adquiere el lock.
 
 */
-
-
 void
 lock_acquire (struct lock *lock)
 {
@@ -258,7 +256,7 @@ lock_acquire (struct lock *lock)
   ASSERT (!lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
-  enum intr_level old_level = intr_disable();
+  //enum intr_level old_level = intr_disable();
 
   struct thread *actual = thread_current();
   // si es multilevel feedback queue, no necesita cambiar la prioridad del thread, 
@@ -269,7 +267,7 @@ lock_acquire (struct lock *lock)
   actual->locks_intentan_adquirir =lock;
 
 
-  if(lock->holder != NULL){ //alguien más tiene el lock
+  if(lock->holder != NULL){ //alguien más tiene el lock.
     struct lock *temp = lock;
       //aplicamos donación
     while (temp != NULL)
@@ -291,15 +289,15 @@ lock_acquire (struct lock *lock)
   }
 
    sema_down (&lock->semaphore);
-   lock->priority = actual->priority;
-   lock->holder = actual;
+   lock->priority = actual->priority; //cambiar a la prioridad del que tiene el lock.
+   lock->holder = actual; //decir quien tiene el lock
   if(thread_mlfqs == false){
 
 //   actual->locks_intentan_adquirir = NULL;
    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
   }
   //retornamos a las interrupciones, antes de..
-  intr_set_level(old_level);
+  //intr_set_level(old_level);
 
 }
 
@@ -335,8 +333,8 @@ lock_release (struct lock *lock)
   //realease, que el current thread debe poseer.lock
   /*
   ** tambien hay que remover el lock de la lista de los locks
-  **quitamos lo de donacion
   **levantamos el semaforo
+  **poner en null el lockhOLDER para decir que se livero el lock.
   
   */
 
@@ -344,12 +342,12 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   //desabilitamos interrupciones
-  enum intr_level old_level = intr_disable();
-  lock->holder = NULL;
+  //enum intr_level old_level = intr_disable();
+  lock->holder = NULL; //al liberar decimos que nadie tiene el lock.
   struct thread *actual = thread_current();
   if(thread_mlfqs == false){
 
-  list_remove(&lock->lock_tiene);
+  list_remove(&lock->lock_tiene); //removemos el que tiene el lock (previamente ordenado)
  if(list_empty(&actual->Locks)){
 
     actual->priority = actual->originalT;
@@ -367,7 +365,7 @@ lock_release (struct lock *lock)
 
   sema_up (&lock->semaphore);
     //retornamos a las interrupciones, antes de..
-  intr_set_level(old_level);
+  //intr_set_level(old_level);
 }
 
 /* Returns true if the current thread holds LOCK, false
