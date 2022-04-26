@@ -285,10 +285,8 @@ lock_acquire (struct lock *lock)
     }
 
   }
-  
-  /*else{
-    actual->locks_intentan_adquirir = NULL;
-  }*/
+
+  else   actual->locks_intentan_adquirir = NULL;
 
   }
 
@@ -297,7 +295,7 @@ lock_acquire (struct lock *lock)
    lock->holder = actual;
   if(thread_mlfqs == false){
 
-   actual->locks_intentan_adquirir = NULL;
+//   actual->locks_intentan_adquirir = NULL;
    list_insert_ordered(&actual->Locks, &lock->lock_tiene, &ordered, aux );
   }
   //retornamos a las interrupciones, antes de..
