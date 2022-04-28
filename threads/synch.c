@@ -348,14 +348,15 @@ lock_release (struct lock *lock)
   if(thread_mlfqs == false){
 
   list_remove(&lock->lock_tiene); //removemos el que tiene el lock (previamente ordenado)
- //if(list_empty(&actual->Locks)){
-
+ if(list_empty(&actual->Locks)){
+    //donación de uno
     actual->priority = actual->originalT;
     actual->dono = false;
- /* }else{
+ }else{
+    //multiple donación
     //obtenemos el primer thread de la lista de locks, y cambiamos la prioridad del thread actual.
     actual->priority = list_entry(list_front(&actual->Locks), struct lock,lock_tiene )->priority;
-  }*/
+  }
   
   }
  // printf(actual->priority);
