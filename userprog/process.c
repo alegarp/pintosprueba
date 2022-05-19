@@ -434,7 +434,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp) 
+setup_stack (void **esp, const char *file_name) 
 {
   uint8_t *kpage;
   bool success = false;
@@ -449,7 +449,86 @@ setup_stack (void **esp)
       else
         palloc_free_page (kpage);
     }
+  //parse name
+
+  char *parse_copy;
+  parse_copy = palloc_get_page(0);
+
+  if (parse_copy == NULL){
+    return TID_ERROR;
+  }
+  strlcpy(parse_copy, file_name, PGSIZE);
+
+  int argument_number = 0;
+  char* save_pointer;
+
+  char* token = strtok_r(parse_copy, " ", &save_pointer);
+  while (token != NULL)
+  {
+    argument_number++;
+    token = strtok_r(NULL, " ", &save_pointer);
+  }
+
+  //save the arguments on the pointers
+
+  void *argument_size[argument_number];
+  char *arguments[argument_number];
+
+  int align_bytes, arg_index, string_size = 0;
+
+  token = strtok_r(file_name, " ", &save_pointer);
+  while (token != NULL)
+  {
+    arguments[arg_index++] = token;
+    token = strtok_r(NULL, " ", &save_pointer);
+
+  }
+  
+  // Copy the arguments to the stack
+
+  arg_index - argument_number -1;
+
+  while (arg_index >= 0)
+  {
+    string_size = strlen(arguments[arg_index])+1;
+    align_bytes += string_size;
+    *esp -= string_size;
+    argument_size[arg_index] = *esp;
+    memccpy(*esp, arguments[arg_index], string_size);
+    arg_index--;
+  }
+  
+//align the memory
+
+align_bytes = align_bytes % 4;
+if(align_bytes != 0){
+  align_bytes = 4 - align_bytes;
+  *esp -= align_bytes;
+  memset(*esp, 0, align_bytes);
+
+}
+//argument_size[4] align in 4 bytes
+*esp -=4;
+memset(*esp, 0, 4);
+
+for (arg_index = argument_number -1; arg_index >= 0; arg_index--){
+
+  *esp -= sizeof(char*);
+  memcpy(*esp, &argument_size[0], sizeof(char*));
+}
+
+argument_size[0] = *esp;
+*esp -= sizeof(char**);
+memcpy(*esp, &argument_size[0], sizeof(char**));
+
+*esp -= sizeof(int);
+memcpy(*esp, &argument_number, sizeof(int));
+
+*esp -= 4;
+memset(*esp, 0, 4);
+
   return success;
+
 }
 
 /* Adds a mapping from user virtual address UPAGE to kernel
