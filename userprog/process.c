@@ -475,7 +475,7 @@ setup_stack (void **esp, const char *file_name)
   void *argument_size[argument_number];
   char *arguments[argument_number];
 
-  int align_bytes, arg_index, string_size = 0;
+  int align_bytes=0, arg_index=0, string_size = 0;
 
   token = strtok_r(file_name, " ", &save_pointer);
   while (token != NULL)
