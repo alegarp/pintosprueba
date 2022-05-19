@@ -20,6 +20,11 @@ syscall_handler (struct intr_frame *f UNUSED)
   if (syscall_code == SYS_HALT){
     shutdown_power_off();
   }
+  else if(syscall_code ==  SYS_WAIT){
+    tid_t pid = (tid_t)(*((int*)f->esp +1));
+    f->eax = process_wait(pid);
+
+  }
 
 
 
