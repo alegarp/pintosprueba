@@ -487,7 +487,7 @@ setup_stack (void **esp, const char *file_name)
   
   // Copy the arguments to the stack
 
-  arg_index - argument_number -1;
+  arg_index = argument_number -1;
 
   while (arg_index >= 0)
   {
