@@ -482,7 +482,7 @@ setup_stack (void **esp, const char *file_name)
   {
     arguments[arg_index++] = token;
     token = strtok_r(NULL, " ", &save_pointer);
-
+    
   }
   
   // Copy the arguments to the stack
@@ -495,7 +495,7 @@ setup_stack (void **esp, const char *file_name)
     align_bytes += string_size;
     *esp -= string_size;
     argument_size[arg_index] = *esp;
-    memccpy(*esp, arguments[arg_index], string_size);
+    memcpy(*esp, arguments[arg_index], string_size);
     arg_index--;
   }
   
