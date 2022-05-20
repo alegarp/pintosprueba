@@ -65,9 +65,8 @@ static bool is_valid(void *addr){
         ret = false;
         break;
       }
-      addr++;
     }
-    return ret;
+    addr++;
   }
-
+  return ret;
 }
