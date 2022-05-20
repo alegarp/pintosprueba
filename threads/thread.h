@@ -86,7 +86,7 @@ struct thread_aux
 {
    tid_t tid;
    int return_state;
-   struct semaphore child_semaphore;
+   struct semaphore child_sema;
    struct list_elem child_element;
 
 };
