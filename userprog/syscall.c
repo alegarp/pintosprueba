@@ -6,6 +6,7 @@
 
 static void syscall_handler (struct intr_frame *);
 static void exit(int status);
+static bool is_valid(void *addr);
 
 void
 syscall_init (void) 
