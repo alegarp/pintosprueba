@@ -25,6 +25,10 @@ syscall_handler (struct intr_frame *f UNUSED)
     f->eax = process_wait(pid);
 
   }
+  else if(syscall_code == SYS_EXIT){
+     int status = *((int*)f->esp + 1);
+	  exit(status);
+  }
 
 
 
@@ -34,6 +38,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 static void exit(int status){
   printf("%s: exit(%d)\n", thread_current()->name, status);
+  thread_current()->mis_datos->return_state = status;
   thread_exit();
 }
 
