@@ -69,7 +69,7 @@ start_process (void *file_name_)
       thread_current()->parent->success = success;
       sema_up(&thread_current()->parent_sema);
       thread_exit ();
-      
+
   }else{
     struct thread_aux *mi_thread_aux = (struct thread_aux *)calloc(1, sizeof(struct thread_aux));
     sema_init(&mi_thread_aux-> child_sema,0);
@@ -79,7 +79,6 @@ start_process (void *file_name_)
     thread_current()->parent-> success - success;
     sema_up(&thread_current()->parent_sema);
 
-    };
     
 
   }
