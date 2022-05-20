@@ -29,6 +29,15 @@ syscall_handler (struct intr_frame *f UNUSED)
   else if(syscall_code == SYS_EXIT){
      int status = *((int*)f->esp + 1);
 	  exit(status);
+  }else if(syscall_code == SYS_EXEC){
+
+    char *cmd_line = (char*)(*((int*)f->esp +1));
+
+    if(!is_valid(cmd_line))
+      exit(-1);
+
+    f->eax = process_execute(cmd_line);
+
   }
 
 
@@ -43,3 +52,21 @@ static void exit(int status){
   thread_exit();
 }
 
+static bool is_valid(void *addr){
+
+  bool ret = true;
+  for(int i=0, i<4; i++){
+    if(!is_user_vaddr(addr)){
+      ret = false;
+      break;
+    }else{
+      if(pagedir_get_page(thread_current()-> pagedir, addr)== NULL){
+        ret = false;
+        break;
+      }
+      addr++;
+    }
+    return ret;
+  }
+
+}
