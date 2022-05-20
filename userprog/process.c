@@ -89,7 +89,7 @@ start_process (void *file_name_)
   if (!success) {
       thread_current()->mis_datos = NULL;
       thread_current()->parent->success = success;
-      sema_up(&thread_current()->parent_sema);
+      sema_up(&thread_current()->parent-> parent_sema);
       thread_exit ();
 
   }else{
@@ -97,8 +97,8 @@ start_process (void *file_name_)
     sema_init(&mi_thread_aux-> child_sema,0);
     mi_thread_aux->tid = thread_current()->tid;
     thread_current()-> mis_datos=mi_thread_aux;
-    thread_current()-> parent ->thread_aux;
-    thread_current()->parent-> success - success;
+    thread_current()-> parent ->thread_aux = mi_thread_aux;
+    thread_current()->parent-> success = success;
     sema_up(&thread_current()->parent_sema);
 
     

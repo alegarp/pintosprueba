@@ -5,6 +5,7 @@
 #include "threads/thread.h"
 
 static void syscall_handler (struct intr_frame *);
+static void exit(int status);
 
 void
 syscall_init (void) 
