@@ -17,6 +17,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "threads/malloc.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -57,7 +58,7 @@ process_execute (const char *file_name)
 
   sema_down(&thread_current()->parent_sema);
   if(thread_current()->success){
-  list_push_back(&thread_current()->child_threads, &thread_current()->thread_aux->child_element);
+  list_push_back(&thread_current()->child_threads, &thread_current()->thread_aux->child_elem);
   
   return tid;
   }else{
@@ -101,8 +102,6 @@ start_process (void *file_name_)
     thread_current()->parent-> success = success;
     sema_up(&thread_current()->parent_sema);
 
-    
-
   }
     
 
@@ -128,10 +127,31 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  while (true)
-  { 
-      thread_yield();
-  }
+struct thread_aux *t=NULL;
+struct thread_aux *taux;
+struct list_elem *e = list_begin(&thread_current()->child_threads);
+
+while (e != list_end(&thread_current()-> child_threads))
+{
+  taux = list_entry(e, struct thread_aux, child_elem);
+    if(taux->tid == child_tid){
+      t=taux;
+      break;
+    }
+    else
+    e = list_next(e);
+}
+
+if(t==NULL) return -1;
+else{
+  list_remove(e);
+  sema_down(&t->child_sema);
+  thread_current()->return_state = t->return_state;
+  free(t);
+  return thread_current()->return_state;
+}
+
+
   //pass the sempahore 
   // sema_down(&thread_current()-> parent-> some_semaphore);
   
