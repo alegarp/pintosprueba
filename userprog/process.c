@@ -29,20 +29,42 @@ tid_t
 process_execute (const char *file_name) 
 {
   char *fn_copy;
+  char *fn_copy2;
   tid_t tid;
+  char *nombre_programa;
+  char *aux;
+
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
+  fn_copy2 = palloc_get_page(0);
+
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
+  strlcpy (fn_copy2, file_name, PGSIZE);
+
+  nombre_programa = strtok_r(fn_copy2, " ",&aux);
+
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  if (tid == TID_ERROR)
+  if (tid == TID_ERROR){
     palloc_free_page (fn_copy); 
+  }
+  palloc_free_page(fn_copy2);
+
+  sema_down(&thread_current()->parent_sema);
+  if(thread_current()->success){
+  list_push_back(&thread_current()->child_threads, &thread_current()->thread_aux->child_element);
+  
   return tid;
+  }else{
+    return -1;
+  }
+
+  
 }
 
 /* A thread function that loads a user process and starts it
