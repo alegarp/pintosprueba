@@ -56,7 +56,7 @@ static void exit(int status){
 static bool is_valid(void *addr){
 
   bool ret = true;
-  for(int i=0, i<4; i++){
+  for(int i=0; i<4; i++){
     if(!is_user_vaddr(addr)){
       ret = false;
       break;
