@@ -167,6 +167,19 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+
+  struct list_elem *e = list_begin(&cur-> child_threads);
+  struct list_elem *eaux;
+  while (e != list_end(&cur ->child_threads))
+  {
+    eaux = e;
+    e = list_next(e);
+    list_remove(eaux);
+    free(list_entry(eaux, struct thread_aux, child_elem));
+  }
+  
+
+
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -287,6 +300,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (t->pagedir == NULL) 
     goto done;
   process_activate ();
+
+  /**/
 
   /* Open executable file. */
   file = filesys_open (file_name);
