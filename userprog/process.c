@@ -321,8 +321,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   filesys_lock_release();
 
-  palloc_get_page(fn_copy);
-  
+  palloc_free_page(fn_copy);
+
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", file_name);
