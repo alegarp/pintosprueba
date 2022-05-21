@@ -97,7 +97,7 @@ void
 thread_init (void) 
 {
   ASSERT (intr_get_level () == INTR_OFF);
-
+  //inicaimos las listas
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
@@ -266,7 +266,7 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-  // Yield condition
+  // Yield condition, solo es aplicado cuando se usa RR
   if(thread_mlfqs == false && priority > thread_current()->priority)
       thread_yield();
     
@@ -308,6 +308,7 @@ thread_unblock (struct thread *t)
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
   list_push_back (&ready_list, &t->elem);
+  list_sort(&ready_list, &funcion_comparativa ,aux);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -377,8 +378,11 @@ thread_yield (void)
   ASSERT (!intr_context ());
 
   old_level = intr_disable ();
-  if (cur != idle_thread) 
+  if (cur != idle_thread) {
     list_push_back (&ready_list, &cur->elem);
+    list_sort(&ready_list, &funcion_comparativa ,aux);
+  }
+  
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -428,7 +432,11 @@ funcion_comparativa( const struct list_elem *a, const struct list_elem *b,  void
 void
 thread_set_priority (int new_priority) 
 {
-
+  // si es multilevel feedback queue, no necesita cambiar la prioridad del thread, ya que no 
+  // se hace donacion de prioridad
+  if(thread_mlfqs == true){
+    return;
+  }
 //  ASSERT (thread_current() != NULL);
   ASSERT (PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
@@ -484,8 +492,6 @@ thread_set_nice (int nice UNUSED)
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  //return 0;
 
   return thread_current ()->nice;
 }
@@ -558,7 +564,8 @@ kernel_thread (thread_func *function, void *aux)
 
 
 void update_priority(struct thread *t){
-    t->priority =  ((PRI_MAX*F)-((t->recent_cpu)/4))-(t->nice*2)*F;
+  //ecuación data en las guias.
+   t->priority =  ((PRI_MAX)-((t->recent_cpu)/4))-(t->nice*2);
 }
 
 /* Returns the running thread. */
@@ -605,6 +612,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->originalT = priority;
 
   }
+  list_init(&t->Locks);
+  list_init(&t->locksTryAcquire);
+  t->locks_intentan_adquirir=NULL;
   t->dono = false;
   t->magic = THREAD_MAGIC;
 
