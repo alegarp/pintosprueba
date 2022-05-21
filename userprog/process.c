@@ -301,10 +301,28 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
 
+  char *fn_copy;
+  fn_copy = palloc_get_page(0);
+  if (fn_copy == NULL){
+    return TID_ERROR;
+  }
+
+  strlcpy (fn_copy, file_name, PGSIZE);
   /**/
 
   /* Open executable file. */
-  file = filesys_open (file_name);
+  char *nombre_delPrograma;
+  char *aux;
+  nombre_delPrograma = strtok_r(fn_copy, " ", &aux);
+
+  filesys_lock_aquire();
+  
+  file = filesys_open (nombre_delPrograma);
+
+  filesys_lock_release();
+
+  palloc_get_page(fn_copy);
+  
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", file_name);
