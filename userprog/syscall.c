@@ -48,6 +48,15 @@ syscall_handler (struct intr_frame *f UNUSED)
 	  		exit(-1);
 	  	
 	  	f->eax = process_execute(cmd_line);
+	}else if(syscall_code == SYS_WAIT)
+	{
+		tid_t pid = (tid_t)(*((int*)f->esp + 1));
+		f->eax = process_wait(pid);
+	}
+	else if(syscall_code == SYS_EXIT)
+	{
+	  	int status = *((int*)f->esp + 1);
+	  	exit(status);
 	}
 
   }
