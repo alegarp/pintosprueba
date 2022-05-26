@@ -57,7 +57,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 	  	int status = *((int*)f->esp + 1);
 	  	exit(status);
-	}
+	}else{
+    exit(-1);
+  }
 
   }
 }
