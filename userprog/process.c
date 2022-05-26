@@ -153,6 +153,23 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+  struct list_elem *e = list_begin(&cur->child_threads);
+  struct list_elem *eaux;
+  while(e != list_end(&cur->child_threads))
+  {
+    eaux = e;
+    e = list_next(e);
+    list_remove(eaux);
+    free(list_entry(eaux, struct thread_aux, child_elem));
+  }
+  /*e = list_begin(&cur->open_files);
+  while(e != list_end(&cur->open_files))
+  {
+    eaux = e;
+    e = list_next(e);
+    list_remove(eaux);
+    file_close(list_entry(eaux, struct file, file_elem));
+  }*/
   pd = cur->pagedir;
   if (pd != NULL) 
     {
