@@ -12,6 +12,16 @@ struct block *fs_device;
 
 static void do_format (void);
 
+void filesys_lock_acquire(void)
+{
+  lock_acquire(&filesys_lock);
+}
+
+void filesys_lock_release(void)
+{
+  lock_release(&filesys_lock);
+}
+
 /* Initializes the file system module.
    If FORMAT is true, reformats the file system. */
 void
