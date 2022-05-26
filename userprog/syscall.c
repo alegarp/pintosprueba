@@ -15,6 +15,14 @@ syscall_init (void)
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
+
+  int syscall_code = *(int*)f->esp;
+  if(syscall_code == SYS_HALT)
+  {
+  	shutdown_power_off();
+  }else{
+
   printf ("system call!\n");
   thread_exit ();
+  }
 }
