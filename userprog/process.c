@@ -80,7 +80,22 @@ start_process (void *file_name_)
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
+	  {
+    thread_current()->mis_datos = NULL;
+    thread_current()->parent->success = success;
+    sema_up(&thread_current()->parent->parent_sema);
     thread_exit ();
+  }
+  else 
+  {
+    struct thread_aux *mi_thread_aux = (struct thread_aux *)calloc(1, sizeof(struct thread_aux));
+    sema_init(&mi_thread_aux->child_sema, 0);
+    mi_thread_aux->tid = thread_current()->tid;
+    thread_current()->mis_datos = mi_thread_aux;
+    thread_current()->parent->thrd_aux = mi_thread_aux;
+    thread_current()->parent->success = success;
+    sema_up(&thread_current()->parent->parent_sema);
+  }
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -104,7 +119,29 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  return -1;
+	  struct thread_aux *t = NULL;
+  struct thread_aux *taux;
+  struct list_elem *e = list_begin(&thread_current()->child_threads);
+  while(e != list_end(&thread_current()->child_threads))
+  {
+    taux = list_entry(e, struct thread_aux, child_elem);
+    if(taux->tid == child_tid)
+    {
+      t = taux;
+      break;
+    }
+    else e = list_next(e);
+  }
+  if(t == NULL) return -1;
+  else
+  {
+    list_remove(e);
+    sema_down(&t->child_sema);
+    thread_current()->return_state = t->return_state;
+    free(t);
+    return thread_current()->return_state;
+  }
+
 }
 
 /* Free the current process's resources. */
