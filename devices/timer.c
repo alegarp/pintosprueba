@@ -20,6 +20,9 @@
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
+/* Lista de procesos en estado THREAD_BLOCKED. */
+static struct list blocked_list;
+
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
@@ -30,6 +33,25 @@ static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
+
+bool less(struct list_elem *a, struct list_elem *b, void *aux);
+/*Funcion less para comparar el tiempo de ticks*/
+void *aux;
+bool 
+less(struct list_elem *a, struct list_elem *b, void *aux UNUSED)
+{
+  struct thread *thread_a = list_entry(a, struct thread, elem);
+  struct thread *thread_b = list_entry(b, struct thread, elem);
+  if(thread_a->end_sleep == thread_b->end_sleep)
+  {
+    return thread_a->priority > thread_b->priority;
+  }else{
+    //printf("holakase\n");
+    return thread_a->end_sleep < thread_b->end_sleep;
+  }
+}
+
+
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -37,6 +59,9 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+
+    /*Iniciar lista de threads en estado THREAD_BLOCKED*/
+  list_init(&blocked_list);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -89,11 +114,22 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
-
-  ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+if(ticks > 0){
+    enum intr_level old_level;
+    int64_t start = timer_ticks ();
+    int64_t end = start + ticks;
+    struct thread *actual_thread = thread_current();
+    ASSERT (intr_get_level () == INTR_ON);
+    actual_thread->end_sleep = end;
+    actual_thread->start_sleep = start;
+    //list_insert_ordered(&blocked_list, &actual_thread->elem, &less, aux);
+   
+    list_push_front(&blocked_list, &actual_thread->elem);
+    //list_sort(&blocked_list, &less, aux);
+    old_level = intr_disable();
+    thread_block();
+    intr_set_level(old_level);
+  }
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -172,6 +208,20 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+  list_sort(&blocked_list, &less, aux);
+  struct thread *t;
+  while(true){
+    if(list_empty(&blocked_list))
+      break;
+    t = list_entry(list_front(&blocked_list), struct thread, elem);
+    if(t->end_sleep <= ticks)
+    { 
+      list_remove(&t->elem);
+      thread_unblock(t);
+    }
+    else
+      break;
+  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "threads/synch.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -80,6 +81,15 @@ typedef int tid_t;
    only because they are mutually exclusive: only a thread in the
    ready state is on the run queue, whereas only a thread in the
    blocked state is on a semaphore wait list. */
+
+struct thread_aux
+{
+  tid_t tid;
+  int return_state;
+  struct semaphore child_sema;
+  struct list_elem child_elem;
+};
+
 struct thread
   {
     /* Owned by thread.c. */
@@ -90,7 +100,31 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
-  	int tim_sleep;
+  	struct list locks_holding;
+    struct list locks_try_acquire;
+    /*Original Priority*/
+    int original_priority;
+    bool recived_donate;
+    /* timer sleep ticks*/
+    int64_t end_sleep;
+    int64_t start_sleep;
+    //USERPROG
+    //semaforo para esperar procesos hijos
+    //struct semaphore child_sema;
+    struct thread_aux *mis_datos;
+    struct thread_aux *thrd_aux;
+    //Esperar SYS_EXEC
+    struct semaphore parent_sema;
+    bool success;
+    //Thread padre
+    struct thread *parent;
+    //lista archivos abiertos
+    struct list open_files;
+    //lista de hijos
+    struct list child_threads;
+    //Estado final
+    int return_state;
+    struct list_elem child_elem;
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
