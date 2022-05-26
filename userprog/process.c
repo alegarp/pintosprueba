@@ -265,7 +265,7 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp);
+static bool setup_stack (void **esp, const char *file_name);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -384,7 +384,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp))
+  if (!setup_stack (esp, file_name))
     goto done;
 
   /* Start address. */
@@ -523,6 +523,68 @@ setup_stack (void **esp)
       else
         palloc_free_page (kpage);
     }
+    
+  //Copia del nombre
+  char *fn_copy;
+  fn_copy = palloc_get_page (0);
+  if (fn_copy == NULL)
+      return TID_ERROR;
+  strlcpy (fn_copy, file_name, PGSIZE);  
+  //Calcula argc
+  int argc = 0;
+  char *token, *save_ptr;
+  int size_string;
+  token = strtok_r(fn_copy, " ", &save_ptr);
+  while(token != NULL)
+  {
+    argc++;
+    token = strtok_r(NULL, " ", &save_ptr);
+  }
+  //Guardar puntero de los argumentos
+  void *argv[argc];
+  char *argumentos[argc];
+  int align_bytes = 0;
+  int indice = 0;
+  token = strtok_r(file_name, " ", &save_ptr);
+  while(token != NULL)
+  {
+    argumentos[indice++] = token;
+    token = strtok_r(NULL, " ", &save_ptr);
+  }
+  //copiar argumentos al stack
+  indice = argc-1;
+  while(indice >= 0)
+  {
+    size_string = strlen(argumentos[indice])+1;
+    align_bytes += size_string;
+    *esp -= size_string;
+    argv[indice] = *esp;
+    memcpy(*esp, argumentos[indice], size_string);
+    indice--;
+  }
+  //Alinear la memoria
+  align_bytes = align_bytes % 4;
+  if(align_bytes != 0)
+  {
+    align_bytes = 4 - align_bytes;
+    *esp -= align_bytes;
+    memset(*esp, 0, align_bytes);
+  }
+  //argv[4]
+  *esp -= 4;
+  memset(*esp, 0, 4);
+  for(indice = argc-1; indice >= 0; indice--)
+  {
+    *esp -= sizeof(char*);
+    memcpy(*esp, &argv[indice], sizeof(char*));
+  }
+  argv[0] = *esp;
+  *esp -= sizeof(char**);
+  memcpy(*esp, &argv[0], sizeof(char**));
+  *esp -= sizeof(int);
+  memcpy(*esp, &argc, sizeof(int));
+  *esp -= 4;
+  memset(*esp, 0, 4);
   return success;
 }
 
