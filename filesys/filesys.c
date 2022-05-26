@@ -6,9 +6,11 @@
 #include "filesys/free-map.h"
 #include "filesys/inode.h"
 #include "filesys/directory.h"
+#include "threads/synch.h"
 
 /* Partition that contains the file system. */
 struct block *fs_device;
+struct lock filesys_lock;
 
 static void do_format (void);
 
@@ -36,6 +38,7 @@ filesys_init (bool format)
 
   if (format) 
     do_format ();
+  lock_init(&filesys_lock);
 
   free_map_open ();
 }
