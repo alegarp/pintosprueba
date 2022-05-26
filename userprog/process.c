@@ -17,6 +17,8 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "stdlib.h"
+#include "threads/malloc.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -24,11 +26,14 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
-   thread id, or TID_ERROR if the thread cannot be created. */
+   thread id, or TID_ERROR if the thread cannot be created. 
+
+Executes the user program from the designated file in the argument
+   */
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy;
+  char *fn_copy, *nombre_archivo, *temp, *args;
   tid_t tid;
 
   /* Make a copy of FILE_NAME.
@@ -36,14 +41,38 @@ process_execute (const char *file_name)
   fn_copy = palloc_get_page (0);
   if (fn_copy == NULL)
     return TID_ERROR;
+  /*copia y concatenación de cadenas limitadas por tamaño*/
   strlcpy (fn_copy, file_name, PGSIZE);
 
+
+
+/*Parsing the filename can easily be done with strtok_r
+lib/string.c. hay un ejemplo
+El análisis del nombre del archivo-> strtok_r.
+char *strtok_r(char *str, const char *delim, char **saveptr);*/
+  nombre_archivo = strtok_r (fn_copy, " ", &temp);
+
+  /*copia y concatenación de cadenas limitadas por tamaño*/
+  strlcpy(args, temp, strlen(file_name) - strlen(nombre_archivo));
+
+
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create (nombre_archivo, PRI_DEFAULT, start_process, args);
+
+
+
   if (tid == TID_ERROR)
-    palloc_free_page (fn_copy); 
+    palloc_free_page (fn_copy); // Frees the page at PAGE. esta en threads/palloc.c
   return tid;
+
+
 }
+
+
+
+
+
+
 
 /* A thread function that loads a user process and starts it
    running. */
@@ -64,7 +93,12 @@ start_process (void *file_name_)
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
+  {
     thread_exit ();
+  }
+
+
+
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -76,6 +110,11 @@ start_process (void *file_name_)
   NOT_REACHED ();
 }
 
+
+
+
+
+
 /* Waits for thread TID to die and returns its exit status.  If
    it was terminated by the kernel (i.e. killed due to an
    exception), returns -1.  If TID is invalid or if it was not a
@@ -86,14 +125,25 @@ start_process (void *file_name_)
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
-process_wait (tid_t child_tid ) 
+process_wait (tid_t child_tid) 
 {
-  while (true)
-  {
+  //return -1;
+  struct thread* actual = thread_current();
+  struct thread* hijo;
+
+  while(true) {
     thread_yield();
   }
-  
+
+
+
 }
+
+
+
+
+
+
 
 /* Free the current process's resources. */
 void
@@ -199,7 +249,9 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp);
+static bool setup_stack (void **esp, const char *nombre);
+
+
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -219,6 +271,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   bool success = false;
   int i;
 
+
+  //printf("\n\n **LOAD** ya \n\n");
+
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -232,6 +287,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
       printf ("load: %s: open failed\n", file_name);
       goto done; 
     }
+
+
+
+
 
   /* Read and verify executable header. */
   if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
@@ -306,7 +365,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp))
+  if (!setup_stack (esp,file_name))
     goto done;
 
   /* Start address. */
@@ -428,25 +487,69 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   return true;
 }
 
+
+
+
 /* Create a minimal stack by mapping a zeroed page at the top of
-   user virtual memory. */
-static bool
-setup_stack (void **esp) 
+   user virtual memory. 
+   Pasar arg al proceso
+   Page -> 4b
+   El stack pointer está representado por el doble puntero **esp
+*/
+static bool  // stackpointer , nombre del archivo
+setup_stack (void **esp, const char *nombre) 
 {
   uint8_t *kpage;
   bool success = false;
+  char *token, *temporal;
+  int num_argus = 0; //numero de argumentos 
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  
   if (kpage != NULL) 
-    {
+  {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+      
       if (success)
-        *esp = PHYS_BASE;
+      {
+        //printf("\nSetup %p -> ",*esp);
+        *esp = PHYS_BASE; //Top del stack 
+
+/* Reverse order -> paso 2
+Escriba cada argumento (incluido el nombre del ejecutable) en orden inverso, 
+así como al revés para cada cadena, a la pila. Recuerde escribir un \0 para 
+cada argumento. memcpy vendrá útil aquí.
+      char argument[] = "arg1\0"
+      *esp -= strlen(argument);
+      memcpy(*esp, argument, strlen(argument));
+
+void*memcpy(void *dest, const void *src, size_t n) 
+copia n caracteres del área de memoria src al área de memoria dest .
+*/
+        
+
+      char *copy = palloc_get_page (PAL_USER | PAL_ZERO);
+      int argums = strlen(nombre)+1; // asigna memoria solicitada y devuelve puntero
+      *esp -=argums;
+
+      }
       else
+      {
         palloc_free_page (kpage);
-    }
+      }
+
+  }
+
   return success;
 }
+
+
+
+
+
+
+
+
 
 /* Adds a mapping from user virtual address UPAGE to kernel
    virtual address KPAGE to the page table.
