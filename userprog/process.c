@@ -23,6 +23,7 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
+
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -249,7 +250,7 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp, const char *nombre);
+static bool setup_stack (void **esp, const char *file_name);
 
 
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
@@ -497,59 +498,94 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
    El stack pointer está representado por el doble puntero **esp
 */
 static bool  // stackpointer , nombre del archivo
-setup_stack (void **esp, const char *nombre) 
+setup_stack (void **esp, const char *file_name) 
 {
   uint8_t *kpage;
   bool success = false;
-  char *token, *temporal;
-  int num_argus = 0; //numero de argumentos 
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-  
   if (kpage != NULL) 
-  {
+    {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      
       if (success)
-      {
-        //printf("\nSetup %p -> ",*esp);
-        *esp = PHYS_BASE; //Top del stack 
-
-/* Reverse order -> paso 2
-Escriba cada argumento (incluido el nombre del ejecutable) en orden inverso, 
-así como al revés para cada cadena, a la pila. Recuerde escribir un \0 para 
-cada argumento. memcpy vendrá útil aquí.
-      char argument[] = "arg1\0"
-      *esp -= strlen(argument);
-      memcpy(*esp, argument, strlen(argument));
-
-void*memcpy(void *dest, const void *src, size_t n) 
-copia n caracteres del área de memoria src al área de memoria dest .
-*/
-        
-
-      char *copy = palloc_get_page (PAL_USER | PAL_ZERO);
-      int argums = strlen(nombre)+1; // asigna memoria solicitada y devuelve puntero
-      *esp -=argums;
-
-      }
+        *esp = PHYS_BASE;
       else
-      {
         palloc_free_page (kpage);
-      }
+    }
 
+  //Copia del nombre
+  char *fn_copy;
+  fn_copy = palloc_get_page (0);
+  if (fn_copy == NULL)
+      return TID_ERROR;
+  strlcpy (fn_copy, file_name, PGSIZE);  
+  //Calcula argc
+  int argc = 0;
+  char *token, *save_ptr;
+  int size_string;
+
+  token = strtok_r(fn_copy, " ", &save_ptr);
+  while(token != NULL)
+  {
+    argc++;
+    token = strtok_r(NULL, " ", &save_ptr);
   }
+
+  //Guardar puntero de los argumentos
+  void *argv[argc];
+  char *argumentos[argc];
+
+  int align_bytes = 0;
+  int indice = 0;
+
+  token = strtok_r(file_name, " ", &save_ptr);
+  while(token != NULL)
+  {
+    argumentos[indice++] = token;
+    token = strtok_r(NULL, " ", &save_ptr);
+  }
+
+  //copiar argumentos al stack
+  indice = argc-1;
+  while(indice >= 0)
+  {
+    size_string = strlen(argumentos[indice])+1;
+    align_bytes += size_string;
+    *esp -= size_string;
+    argv[indice] = *esp;
+    memcpy(*esp, argumentos[indice], size_string);
+    indice--;
+  }
+  //Alinear la memoria
+  align_bytes = align_bytes % 4;
+  if(align_bytes != 0)
+  {
+    align_bytes = 4 - align_bytes;
+    *esp -= align_bytes;
+    memset(*esp, 0, align_bytes);
+  }
+  //argv[4]
+  *esp -= 4;
+  memset(*esp, 0, 4);
+
+  for(indice = argc-1; indice >= 0; indice--)
+  {
+    *esp -= sizeof(char*);
+    memcpy(*esp, &argv[indice], sizeof(char*));
+  }
+
+  argv[0] = *esp;
+  *esp -= sizeof(char**);
+  memcpy(*esp, &argv[0], sizeof(char**));
+
+  *esp -= sizeof(int);
+  memcpy(*esp, &argc, sizeof(int));
+
+  *esp -= 4;
+  memset(*esp, 0, 4);
 
   return success;
 }
-
-
-
-
-
-
-
-
 
 /* Adds a mapping from user virtual address UPAGE to kernel
    virtual address KPAGE to the page table.
