@@ -351,6 +351,8 @@ void
 thread_exit (void) 
 {
   ASSERT (!intr_context ());
+    if(thread_current()->mis_datos != NULL)
+    sema_up(&thread_current()->mis_datos->child_sema);
 
 #ifdef USERPROG
   process_exit ();
@@ -607,6 +609,12 @@ init_thread (struct thread *t, const char *name, int priority)
   }
   t->dono = false;
   t->magic = THREAD_MAGIC;
+
+  t->parent = running_thread();
+  list_init(&t->open_files);
+  list_init(&t->child_threads);
+  sema_init(&t->parent_sema, 0);
+  t->mis_datos = NULL;
 
 
   old_level = intr_disable ();
