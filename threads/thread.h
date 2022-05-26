@@ -100,6 +100,7 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
+   int tim_sleep;
   	struct list locks_holding;
     struct list locks_try_acquire;
     /*Original Priority*/
