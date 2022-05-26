@@ -37,3 +37,35 @@ syscall_handler (struct intr_frame *f UNUSED)
   {
   	shutdown_power_off();
   }
+}
+
+
+static void exit(int status)
+{
+	printf("%s: exit(%d)\n", thread_current()->name, status);
+  	thread_current()->mis_datos->return_state = status;
+  	thread_exit();
+}
+
+	static bool is_valid(void *addr)
+{
+	bool ret = true;
+	for(int i = 0; i < 4; i++)
+	{
+		if (!is_user_vaddr(addr))
+		{
+			ret = false;
+			break;
+		}
+		else
+			if(pagedir_get_page(thread_current()->pagedir, addr) == NULL)
+			{
+				ret = false;
+				break;
+			}
+		addr++;
+	}
+	return ret;
+}
+
+
