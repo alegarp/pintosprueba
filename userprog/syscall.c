@@ -36,6 +36,20 @@ syscall_handler (struct intr_frame *f UNUSED)
   if(syscall_code == SYS_HALT)
   {
   	shutdown_power_off();
+  }else{
+  
+    if(!is_valid((int*)f->esp + 1))
+  		exit(-1);
+
+    if(syscall_code == SYS_EXEC)
+	{
+		char *cmd_line = (char*)(*((int*)f->esp + 1));
+	  	if(!is_valid(cmd_line))
+	  		exit(-1);
+	  	
+	  	f->eax = process_execute(cmd_line);
+	}
+
   }
 }
 
@@ -68,4 +82,20 @@ static void exit(int status)
 	return ret;
 }
 
-
+static struct file * search_file(int fd)
+{
+	struct file *file = NULL;
+	struct file *faux;
+	struct list_elem *e = list_begin(&thread_current()->open_files);
+	while(e != list_end(&thread_current()->open_files))
+	{
+		faux = list_entry(e, struct file, file_elem);
+		if(faux->fd == fd)
+		{
+			file = faux;
+			break;
+		}
+		else e = list_next(e);
+	}
+	return file;
+}
