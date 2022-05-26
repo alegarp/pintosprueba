@@ -19,6 +19,7 @@
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
 
+
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
@@ -29,12 +30,11 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy;
+char *fn_copy;
   char *fn_copy2;
   tid_t tid;
   char *nombre_programa;
   char *aux;
-
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
@@ -43,9 +43,7 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
   strlcpy (fn_copy2, file_name, PGSIZE);
-
   nombre_programa = strtok_r(fn_copy2, " ", &aux);
-
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (nombre_programa, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
@@ -53,7 +51,6 @@ process_execute (const char *file_name)
     palloc_free_page (fn_copy); 
   }
   palloc_free_page (fn_copy2);
-
   sema_down(&thread_current()->parent_sema);
   if(thread_current()->success)
   {
@@ -79,25 +76,11 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
+
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
-  {
-    thread_current()->mis_datos = NULL;
-    thread_current()->parent->success = success;
-    sema_up(&thread_current()->parent->parent_sema);
     thread_exit ();
-  }
-  else 
-  {
-    struct thread_aux *mi_thread_aux = (struct thread_aux *)calloc(1, sizeof(struct thread_aux));
-    sema_init(&mi_thread_aux->child_sema, 0);
-    mi_thread_aux->tid = thread_current()->tid;
-    thread_current()->mis_datos = mi_thread_aux;
-    thread_current()->parent->thrd_aux = mi_thread_aux;
-    thread_current()->parent->success = success;
-    sema_up(&thread_current()->parent->parent_sema);
-  }
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -121,30 +104,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  struct thread_aux *t = NULL;
-  struct thread_aux *taux;
-  struct list_elem *e = list_begin(&thread_current()->child_threads);
-  while(e != list_end(&thread_current()->child_threads))
-  {
-    taux = list_entry(e, struct thread_aux, child_elem);
-    if(taux->tid == child_tid)
-    {
-      t = taux;
-      break;
-    }
-    else e = list_next(e);
-  }
-
-  if(t == NULL) return -1;
-  else
-  {
-    list_remove(e);
-    sema_down(&t->child_sema);
-    thread_current()->return_state = t->return_state;
-    free(t);
-    return thread_current()->return_state;
-  }
-
+  return -1;
 }
 
 /* Free the current process's resources. */
@@ -156,25 +116,6 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
-  struct list_elem *e = list_begin(&cur->child_threads);
-  struct list_elem *eaux;
-  while(e != list_end(&cur->child_threads))
-  {
-    eaux = e;
-    e = list_next(e);
-    list_remove(eaux);
-    free(list_entry(eaux, struct thread_aux, child_elem));
-  }
-
-  /*e = list_begin(&cur->open_files);
-  while(e != list_end(&cur->open_files))
-  {
-    eaux = e;
-    e = list_next(e);
-    list_remove(eaux);
-    file_close(list_entry(eaux, struct file, file_elem));
-  }*/
-
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -270,7 +211,7 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp, const char *file_name);
+static bool setup_stack (void **esp);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -296,19 +237,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
 
-  char *fn_copy;
-  fn_copy = palloc_get_page (0);
-  if (fn_copy == NULL)
-      return TID_ERROR;
-  strlcpy (fn_copy, file_name, PGSIZE);
   /* Open executable file. */
-  char *nombre_programa;
-  char *aux;
-  nombre_programa = strtok_r(fn_copy, " ", &aux);
-  filesys_lock_acquire();
-  file = filesys_open (nombre_programa);
-  filesys_lock_release();
-  palloc_free_page(fn_copy);
+  file = filesys_open (file_name);
   if (file == NULL) 
     {
       printf ("load: %s: open failed\n", file_name);
@@ -388,7 +318,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp, file_name))
+  if (!setup_stack (esp))
     goto done;
 
   /* Start address. */
@@ -513,7 +443,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp, const char *file_name) 
+setup_stack (void **esp) 
 {
   uint8_t *kpage;
   bool success = false;
@@ -527,78 +457,6 @@ setup_stack (void **esp, const char *file_name)
       else
         palloc_free_page (kpage);
     }
-
-  //Copia del nombre
-  char *fn_copy;
-  fn_copy = palloc_get_page (0);
-  if (fn_copy == NULL)
-      return TID_ERROR;
-  strlcpy (fn_copy, file_name, PGSIZE);  
-  //Calcula argc
-  int argc = 0;
-  char *token, *save_ptr;
-  int size_string;
-
-  token = strtok_r(fn_copy, " ", &save_ptr);
-  while(token != NULL)
-  {
-    argc++;
-    token = strtok_r(NULL, " ", &save_ptr);
-  }
-
-  //Guardar puntero de los argumentos
-  void *argv[argc];
-  char *argumentos[argc];
-
-  int align_bytes = 0;
-  int indice = 0;
-
-  token = strtok_r(file_name, " ", &save_ptr);
-  while(token != NULL)
-  {
-    argumentos[indice++] = token;
-    token = strtok_r(NULL, " ", &save_ptr);
-  }
-
-  //copiar argumentos al stack
-  indice = argc-1;
-  while(indice >= 0)
-  {
-    size_string = strlen(argumentos[indice])+1;
-    align_bytes += size_string;
-    *esp -= size_string;
-    argv[indice] = *esp;
-    memcpy(*esp, argumentos[indice], size_string);
-    indice--;
-  }
-  //Alinear la memoria
-  align_bytes = align_bytes % 4;
-  if(align_bytes != 0)
-  {
-    align_bytes = 4 - align_bytes;
-    *esp -= align_bytes;
-    memset(*esp, 0, align_bytes);
-  }
-  //argv[4]
-  *esp -= 4;
-  memset(*esp, 0, 4);
-
-  for(indice = argc-1; indice >= 0; indice--)
-  {
-    *esp -= sizeof(char*);
-    memcpy(*esp, &argv[indice], sizeof(char*));
-  }
-
-  argv[0] = *esp;
-  *esp -= sizeof(char**);
-  memcpy(*esp, &argv[0], sizeof(char**));
-
-  *esp -= sizeof(int);
-  memcpy(*esp, &argc, sizeof(int));
-
-  *esp -= 4;
-  memset(*esp, 0, 4);
-
   return success;
 }
 
