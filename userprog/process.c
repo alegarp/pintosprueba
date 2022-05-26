@@ -300,9 +300,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   char *nombre_programa;
   char *aux;
   nombre_programa = strtok_r(fn_copy, " ", &aux);
-  filesys_lock_acquire();
+  //filesys_lock_acquire();
   file = filesys_open (nombre_programa);
-  filesys_lock_release();
+  //filesys_lock_release();
   palloc_free_page(fn_copy);
 
   if (file == NULL) 
