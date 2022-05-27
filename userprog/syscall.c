@@ -19,6 +19,8 @@ static bool is_valid(void *addr);
 static struct file * search_file(int fd);
 struct lock lock_filesys;
 
+
+
 void
 syscall_init (void) 
 {
@@ -26,6 +28,12 @@ syscall_init (void)
   lock_init(&lock_filesys);
 }
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 /*
 Entre 1 a 3 argumentos pag 44
 Frame stack pointer f->esp
@@ -86,7 +94,11 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//sino es de valido el ejecutable		
 	    if(!is_valid(cmd_line))
 	        exit(-1);
+<<<<<<< HEAD
 
+=======
+	    
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	    //process con el ejecutable para que devuelva la info 
 	    f->eax = process_execute(cmd_line);
 
@@ -115,17 +127,29 @@ syscall_handler (struct intr_frame *f UNUSED)
 
       		if(!is_valid((int*)f->esp + 2))
       			exit(-1);
+<<<<<<< HEAD
 
+=======
+      		
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 
       		//nom archivo
     	    file_n = (char*)(*((int*)f->esp + 1));
     	    //size ini
 		    unsigned initial_size = (unsigned)(*((int*)f->esp + 2));
+<<<<<<< HEAD
 
 
 		    if(!is_valid(file_n))
 		        exit(-1);
 
+=======
+		    
+
+		    if(!is_valid(file_n))
+		        exit(-1);
+      		
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
       		//filesys
 	      	filesys_lock_acquire();
 	      	f->eax = filesys_create(file_n, initial_size);
@@ -139,7 +163,11 @@ syscall_handler (struct intr_frame *f UNUSED)
         //nombre archivo
           if(!is_valid((int*)f->esp + 1))
             exit(-1);
+<<<<<<< HEAD
 
+=======
+			
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 			//
             file_n = (char*)(*((int*)f->esp + 1));
 		    if(!is_valid(file_n))
@@ -165,12 +193,20 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 	      if(!is_valid(file_n ))
 	        exit(-1);
+<<<<<<< HEAD
 
+=======
+	      
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	      //abrir archivo filesys
 	      filesys_lock_acquire();
 	      open_file = filesys_open(file_n );
 	      filesys_lock_release();
+<<<<<<< HEAD
 
+=======
+	      
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	      //
 	      if(open_file == NULL)
 	      {
@@ -183,7 +219,11 @@ syscall_handler (struct intr_frame *f UNUSED)
 	        list_push_back(&thread_current()->open_files, &open_file->file_elem);
 	        f->eax = open_file->fd;
 	      }
+<<<<<<< HEAD
 
+=======
+	      
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
       	break;
 
 
@@ -204,6 +244,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 
     	case SYS_READ:
+<<<<<<< HEAD
 
       	    if(!is_valid((int*)f->esp + 3))
         		exit(-1);
@@ -217,13 +258,32 @@ syscall_handler (struct intr_frame *f UNUSED)
 	        if(!is_valid(buffer))
 	            exit(-1);
 
+=======
+      
+      	    if(!is_valid((int*)f->esp + 3))
+        		exit(-1);
+	        
+	        int i;
+	        fd = *((int*)f->esp + 1);
+	        
+	        buffer = (void*)(*((int*)f->esp + 2));
+	        size = *((unsigned*)f->esp + 3);
+	          
+	        if(!is_valid(buffer))
+	            exit(-1);
+	          
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	        if(fd == 0)
 	        {
 	            for(i = 0; i < size; i++)
 	            {
 	            	((char*)buffer)[i] = input_getc();
 	            }
+<<<<<<< HEAD
 
+=======
+	            
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	            f->eax = i;
 	        }
 	        else
@@ -239,12 +299,17 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 
 
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
     	case SYS_WRITE:
       //  printf("WRITE"); pag 45
 
 		if(!is_valid((int*)f->esp + 3))
         	exit(-1);
+<<<<<<< HEAD
 
 	      if(syscall_code == SYS_WRITE)
 	      {
@@ -256,6 +321,19 @@ syscall_handler (struct intr_frame *f UNUSED)
 	        if(!is_valid(buffer))
 	            exit(-1);
 
+=======
+          
+	      if(syscall_code == SYS_WRITE)
+	      {
+	        
+	        fd = *((int*)f->esp + 1);
+	        buffer = (void*)(*((int*)f->esp + 2));
+	        size = *((unsigned*)f->esp + 3);
+	          
+	        if(!is_valid(buffer))
+	            exit(-1);
+	            
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	        if(fd == 1)
 	        {
 	        	putbuf(buffer, size);
@@ -278,11 +356,19 @@ syscall_handler (struct intr_frame *f UNUSED)
       //  printf("SEEK");
       		if(!is_valid((int*)f->esp + 2))
       			exit(-1);
+<<<<<<< HEAD
 
       	    fd = *((int*)f->esp + 1);
        		position = (unsigned)(*((int*)f->esp + 2));
         	file = search_file(fd);
 
+=======
+      	    
+      	    fd = *((int*)f->esp + 1);
+       		position = (unsigned)(*((int*)f->esp + 2));
+        	file = search_file(fd);
+        	
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
         	if(file != NULL)
           		file_seek(file, position);
         break;
@@ -294,7 +380,11 @@ syscall_handler (struct intr_frame *f UNUSED)
     	//da el byte 
     	   	if(!is_valid((int*)f->esp + 1))
       			exit(-1);
+<<<<<<< HEAD
 
+=======
+		    
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 		    fd = *((int*)f->esp + 1);
 		    file = search_file(fd);
 		    if(file == NULL)
@@ -310,7 +400,11 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 	    	if(!is_valid((int*)f->esp + 1))
 	      		exit(-1);
+<<<<<<< HEAD
 
+=======
+	    	
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 	    	fd = *((int*)f->esp + 1);
 	    	file = search_file(fd);
 		    if(file != NULL)
@@ -329,6 +423,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 
     } //Switch end
 
+<<<<<<< HEAD
+=======
+
+}//syscall handler
+
+
+
+>>>>>>> da6d1210ff4d850237def1a60d85a57be483c5fd
 
 }//syscall handler
 
@@ -338,6 +440,10 @@ static void exit(int status)
   	thread_current()->mis_datos->return_state = status;
   	thread_exit();
 }
+
+
+
+
 
 	static bool is_valid(void *addr)
 {
@@ -359,6 +465,23 @@ static void exit(int status)
 	}
 	return ret;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 static struct file * search_file(int fd)
 {
