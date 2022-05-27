@@ -351,6 +351,7 @@ void
 thread_exit (void) 
 {
   ASSERT (!intr_context ());
+    //levantar un semaforo para procesos hijos
     if(thread_current()->mis_datos != NULL)
     sema_up(&thread_current()->mis_datos->child_sema);
 
@@ -610,7 +611,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->dono = false;
   t->magic = THREAD_MAGIC;
 
+  //obtenemos el thread actual
   t->parent = running_thread();
+  // inicializamos los datos 
   list_init(&t->open_files);
   list_init(&t->child_threads);
   sema_init(&t->parent_sema, 0);

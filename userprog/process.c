@@ -30,7 +30,7 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-char *fn_copy;
+  char *fn_copy;
   char *fn_copy2;
   tid_t tid;
   char *nombre_programa;
@@ -41,19 +41,23 @@ char *fn_copy;
   fn_copy2 = palloc_get_page(0);
   if (fn_copy == NULL)
     return TID_ERROR;
+  //copia y concatenacion con cadenas limitadas un PGSIZE
   strlcpy (fn_copy, file_name, PGSIZE);
   strlcpy (fn_copy2, file_name, PGSIZE);
+  //Se hace el parsing del archivo, LIB/STRING.C ejemplo; analisis del nombre del archivo :^)
   nombre_programa = strtok_r(fn_copy2, " ", &aux);
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (nombre_programa, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
   {
+    //treads/palloc.c ejemplo
     palloc_free_page (fn_copy); 
   }
   palloc_free_page (fn_copy2);
   sema_down(&thread_current()->parent_sema);
   if(thread_current()->success)
   {
+    //retorna el TID y pone al final de la lista los hijos del current thread
     list_push_back(&thread_current()->child_threads, &thread_current()->thrd_aux->child_elem);
     return tid;
   }
@@ -81,6 +85,7 @@ start_process (void *file_name_)
   palloc_free_page (file_name);
   if (!success) 
 	  {
+    //inicializar los parametros del proceso en 'cero' y levantar el semaphore y mata el thread
     thread_current()->mis_datos = NULL;
     thread_current()->parent->success = success;
     sema_up(&thread_current()->parent->parent_sema);
@@ -88,6 +93,8 @@ start_process (void *file_name_)
   }
   else 
   {
+    //inicializa el proceso asigna espacio de memoria y la inicializa en cero.
+    //
     struct thread_aux *mi_thread_aux = (struct thread_aux *)calloc(1, sizeof(struct thread_aux));
     sema_init(&mi_thread_aux->child_sema, 0);
     mi_thread_aux->tid = thread_current()->tid;
@@ -153,6 +160,8 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+
+  //del thread actual lista cada child para removerlo y liberar el espacio.
   struct list_elem *e = list_begin(&cur->child_threads);
   struct list_elem *eaux;
   while(e != list_end(&cur->child_threads))
@@ -162,14 +171,7 @@ process_exit (void)
     list_remove(eaux);
     free(list_entry(eaux, struct thread_aux, child_elem));
   }
-  /*e = list_begin(&cur->open_files);
-  while(e != list_end(&cur->open_files))
-  {
-    eaux = e;
-    e = list_next(e);
-    list_remove(eaux);
-    file_close(list_entry(eaux, struct file, file_elem));
-  }*/
+
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -296,7 +298,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (fn_copy == NULL)
       return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
-  /* Open executable file. */
+  /* Open executable file. 
+      Pasa el nombre del archivo a un File y libera la pagina; utilizando Locks
+  */
   char *nombre_programa;
   char *aux;
   nombre_programa = strtok_r(fn_copy, " ", &aux);
@@ -530,7 +534,7 @@ setup_stack (void **esp, const char *file_name)
   if (fn_copy == NULL)
       return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);  
-  //Calcula argc
+  //Calcula argc - tokenizar los argumentos con los espacios en blanco
   int argc = 0;
   char *token, *save_ptr;
   int size_string;
@@ -540,7 +544,7 @@ setup_stack (void **esp, const char *file_name)
     argc++;
     token = strtok_r(NULL, " ", &save_ptr);
   }
-  //Guardar puntero de los argumentos
+  //Guardar puntero de los argumentos en un arreglo
   void *argv[argc];
   char *argumentos[argc];
   int align_bytes = 0;
@@ -551,7 +555,7 @@ setup_stack (void **esp, const char *file_name)
     argumentos[indice++] = token;
     token = strtok_r(NULL, " ", &save_ptr);
   }
-  //copiar argumentos al stack
+  //copiar argumentos al stack 
   indice = argc-1;
   while(indice >= 0)
   {
@@ -562,7 +566,7 @@ setup_stack (void **esp, const char *file_name)
     memcpy(*esp, argumentos[indice], size_string);
     indice--;
   }
-  //Alinear la memoria
+  //Alinear la memoria en 4 bytes
   align_bytes = align_bytes % 4;
   if(align_bytes != 0)
   {
@@ -570,7 +574,8 @@ setup_stack (void **esp, const char *file_name)
     *esp -= align_bytes;
     memset(*esp, 0, align_bytes);
   }
-  //argv[4]
+  //argv[4] - preparar la memoria antes que se utilize user program
+  //basado en la guia de pintos 
   *esp -= 4;
   memset(*esp, 0, 4);
   for(indice = argc-1; indice >= 0; indice--)

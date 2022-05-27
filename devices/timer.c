@@ -40,6 +40,8 @@ void *aux;
 bool 
 less(struct list_elem *a, struct list_elem *b, void *aux UNUSED)
 {
+  //compara dependiendo de su end_sleep
+  //end_sleep - tiempo en lo que van a estar dormidos
   struct thread *thread_a = list_entry(a, struct thread, elem);
   struct thread *thread_b = list_entry(b, struct thread, elem);
   if(thread_a->end_sleep == thread_b->end_sleep)
@@ -208,6 +210,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+  // ordernar la lista de blocked y hacer unblock dependiendo de los ticks que lleva
   list_sort(&blocked_list, &less, aux);
   struct thread *t;
   while(true){

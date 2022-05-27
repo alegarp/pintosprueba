@@ -7,6 +7,7 @@
 struct inode;
 
 /* An open file. */
+//para que sea libreria
 struct file 
   {
     struct inode *inode;        /* File's inode. */

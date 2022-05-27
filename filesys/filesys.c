@@ -14,6 +14,7 @@ struct lock filesys_lock;
 
 static void do_format (void);
 
+//uso de locks para los archivos
 void filesys_lock_acquire(void)
 {
   lock_acquire(&filesys_lock);
